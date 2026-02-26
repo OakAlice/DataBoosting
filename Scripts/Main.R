@@ -47,10 +47,7 @@ sample_rates <- list(Galea_Cat = 50, # could find a better way to store this, ma
                      Clemente_Echidna = 10
 )
 
-
-species <- "Dunford_Cat"
-
-boost_methods <- c("Nothing", "Overlap50", "Oversample", "Weighted")
+boost_methods <- c("Nothing", "Oversample", "Overlap50", "Overlap90")
 
 # Running over each of the datasets ---------------------------------------
 all_species <- basename(list.dirs("Data", recursive = F))
@@ -67,12 +64,15 @@ for (species in all_species){
   source("Scripts/GenerateFeatures.R")
   
   # repeating the entire process 3 times, so need to split out the test data
-  data <- fread(file.path("Data", species, "Feature_data.csv"))
+  data <- fread(file.path("Data", species, "Nothing_Feature_data.csv"))
   unique_IDs <- unique(data$ID)
   ID_groups <- data.frame(
     ID = unique_IDs,
     group = sample(rep(1:3, length.out = length(unique_IDs)))
   )
+  
+  # boost the data, make the features
+  source(paste0("Scripts/BoostMethods/", method, ".R"))
   
   for (method in boost_methods){
     print(method)
@@ -81,9 +81,6 @@ for (species in all_species){
       print(i)
       # define the test IDs for this round
       test_IDs <- ID_groups$ID[ID_groups$group == i]
-      
-      # boost the data, make the features
-      source(paste0("Scripts/BoostMethods/", method, ".R"))
       
       # make the model
       data <- fread(file = file.path("Data", species, paste0(method, "_Feature_data.csv")))
@@ -116,7 +113,7 @@ result_df <- rbindlist(results_df)
 # plot the results
 ggplot(result_df %>% dplyr::filter(Behaviour == "WeightedOverall"),
        aes(x = method, y = F1, colour = as.factor(method))) +
-  geom_point() +
+  geom_point(size = 2) +
   my_theme() +
   scale_colour_manual(values = fave_colours) +
   facet_wrap(~Species)

@@ -1,6 +1,7 @@
 # Ignore these directories
 Manuscripts/
 Data/
+Output/
 
 # leave one example of data
 /Data/*
