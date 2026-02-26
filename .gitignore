@@ -1,0 +1,21 @@
+# Ignore these directories
+Manuscripts/
+Data/
+
+# leave one example of data
+/Data/*
+!/Data/Galea_Cat/
+!/Data/Galea_Cat/**
+
+# Ignore R history files
+*.Rhistory
+
+# Ignore various other file types
+*.txt
+*.rda
+*.pdf
+*.png
+*.docx
+*.pptx
+*.svg
+*.pyc

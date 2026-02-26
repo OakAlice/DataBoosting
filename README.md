@@ -1,2 +1,2 @@
 # DataBoosting
-Experimenting with techniques for boosting minority samples
+Experimenting with techniques for boosting minority samples.
