@@ -1,34 +1,27 @@
 # Main script for data boosting chapter -----------------------------------
 
 # Set up ------------------------------------------------------------------
-setwd("C:/Users/oaw001/OneDrive - University of the Sunshine Coast/DataBoosting")
+# setwd("C:/Users/oaw001/OneDrive - University of the Sunshine Coast/DataBoosting")
+setwd("C:/Users/PC/OneDrive - University of the Sunshine Coast/DataBoosting")
 
 set.seed(1000)
 
 pacman::p_load(
   tidyverse, 
   data.table,
-  bruceR,
-  caret,
-  ggplot2,
   future,
   future.apply,
-  HMM,
-  torch,
-  zoo,
-  lubridate,
-  rlang,
   tsfeatures,
-  lubridate,
-  effsize,
-  lme4,
-  lmerTest,
   rBayesianOptimization,
-  ranger
+  ranger,
+  smotefamily
 )
 
 source("Scripts/PerformanceTestingFunctions.R")
 source("Scripts/PlotFunctions.R")
+source("Scripts/ModelDesign_Functions.R")
+source("Scripts/GenerateFeatures_Functions.R")
+
 
 sample_rates <- list(Galea_Cat = 50, # could find a better way to store this, maybe read from csv...?
                      Dunford_Cat = 40,
@@ -45,9 +38,14 @@ sample_rates <- list(Galea_Cat = 50, # could find a better way to store this, ma
                      Sparkes_Koala = 50,
                      Mauny_Goat = 5,
                      Clemente_Echidna = 10
-)
+                     )
 
-boost_methods <- c("Nothing", "Oversample", "Overlap50", "Overlap90")
+boost_methods <- c("Nothing", 
+                   "Oversample", 
+                   "Overlap50", 
+                   "Overlap90", 
+                   "SMOTE"
+                   )
 
 # Running over each of the datasets ---------------------------------------
 all_species <- basename(list.dirs("Data", recursive = F))
@@ -58,9 +56,10 @@ for (species in all_species){
     dir.create(paste0("Output/", species))
   }
   
-  # Generate the normal features / do nothing
-  method <- "Nothing"
+  # Generate the features without anything
   data1 <- fread(file.path("Data", species, "Formatted_raw_data.csv"))
+  overlap_setting <- 0
+  method <- "Nothing"
   source("Scripts/GenerateFeatures.R")
   
   # repeating the entire process 3 times, so need to split out the test data
@@ -71,26 +70,20 @@ for (species in all_species){
     group = sample(rep(1:3, length.out = length(unique_IDs)))
   )
   
-  # boost the data, make the features
-  source(paste0("Scripts/BoostMethods/", method, ".R"))
-  
   for (method in boost_methods){
     print(method)
-  
+    
     for (i in 1:3){
       print(i)
       # define the test IDs for this round
       test_IDs <- ID_groups$ID[ID_groups$group == i]
       
-      # make the model
-      data <- fread(file = file.path("Data", species, paste0(method, "_Feature_data.csv")))
-      other_data <- data %>% dplyr::filter(!ID %in% test_IDs) 
-      source("Scripts/BuildModel.R")
+      # create a boosted model
+      source(paste0("Scripts/BoostMethods/", method, ".R"))
       
       # test the model
       test_data <- data %>% dplyr::filter(ID %in% test_IDs)
       source("Scripts/TestModel.R")
-      
     }
   
   }

@@ -1,5 +1,29 @@
 # Generate Features -------------------------------------------------------
-# taken directly from my Open Set Recognition work
+
+generate_features_master <- function(data, sample_rate, overlap_setting, window_setting){
+  
+  available_axes <- c("X", "Y", "Z")
+  
+  generated_features <- list()
+  for (id in unique(data1$ID)){
+    
+    data <- data1 %>% 
+      dplyr::filter(ID == id) %>% 
+      as.data.table()
+    
+    feature_data <- processDataPerID(data, 
+                                     features_type = c("timeseries", "statistical"), 
+                                     window_length = window_setting, 
+                                     sample_rate = sample_rate, 
+                                     overlap_percent = overlap_setting
+    )
+    
+    generated_features[[id]] <- feature_data
+  }
+  generated_features_df <- bind_rows(generated_features)
+  
+  return(generated_features_df) 
+}
 
 # Function to process data for each ID
 processDataPerID <- function(id_raw_data, features_type, window_length, sample_rate, overlap_percent) {
