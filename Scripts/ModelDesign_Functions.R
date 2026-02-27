@@ -40,6 +40,12 @@ design_build_RF <- function(other_data){
     na.omit() %>%
     mutate(Activity = as.factor(Activity))
   
+  if (best_mtry > length(clean_cols)-1){
+    message("mtry too big, making max clean cols")
+    flush.console()
+    best_mtry <- length(clean_cols)
+  }
+  
   RF_model <- ranger(
     dependent.variable.name = "Activity",
     data = training_data,

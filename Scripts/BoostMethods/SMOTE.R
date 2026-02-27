@@ -6,7 +6,7 @@
 #| to generate "new" minority class points
 #| Using the SMOTE function from the smotefamily package
 
-if (!file.exists(file.path("Output", species, paste0(method, "_model_", i, ".csv")))) {
+if (!file.exists(file.path("Output", species, paste0(method, "_model_", i, ".rds")))) {
     
   # begin with the original feature data but just the non-test IDs
   data1 <- fread(file.path("Data", species, "Nothing_Feature_data.csv"))
@@ -33,6 +33,9 @@ if (!file.exists(file.path("Output", species, paste0(method, "_model_", i, ".csv
       count(Activity) %>%
       summarise(min = min(n)-1) %>%
       pull(min)
+  
+  # the smaller of 5 and the minimum
+  K_chosen <- min(c(K_min, 5))
     
   # select numeric feature data
   minority_numeric <- minority_data %>% select(-Activity, -Time, -ID)
@@ -40,7 +43,7 @@ if (!file.exists(file.path("Output", species, paste0(method, "_model_", i, ".csv
   # SMOTE the minority classes
   dat_boosted <- smotefamily::SMOTE(X = minority_numeric,
                                     target = minority_data$Activity,
-                                    K = K_min,
+                                    K = K_chosen,
                                     dup_size = 100
   )
   

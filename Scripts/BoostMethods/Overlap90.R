@@ -16,7 +16,7 @@ if (file.exists(file.path("Data", species, "Overlap90_Feature_data.csv"))){
 }
 
 # Make the model ----------------------------------------------------------
-if (!file.exists(file.path("Output", species, paste0(method, "_model_", i, ".csv")))) {
+if (!file.exists(file.path("Output", species, paste0(method, "_model_", i, ".rds")))) {
   
   data <- fread(file = file.path("Data", species, paste0(method, "_Feature_data.csv")))
   other_data <- data %>% dplyr::filter(!ID %in% test_IDs) 

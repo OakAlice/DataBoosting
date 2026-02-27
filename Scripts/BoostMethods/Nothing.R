@@ -15,12 +15,12 @@ if (file.exists(file.path("Data", species, "Nothing_Feature_data.csv"))){
 }
 
 # Make the model ----------------------------------------------------------
-if (!file.exists(file.path("Output", species, paste0(method, "_model_", i, ".csv")))) {
+if (!file.exists(file.path("Output", species, paste0("Nothing_model_", i, ".rds")))) {
   
-  data <- fread(file = file.path("Data", species, paste0(method, "_Feature_data.csv")))
+  data <- fread(file = file.path("Data", species, "Nothing_Feature_data.csv"))
   other_data <- data %>% dplyr::filter(!ID %in% test_IDs) 
   RF_model <- design_build_RF(other_data)  
-  saveRDS(RF_model, file.path("Output", species, paste0(method, "_model_", i, ".rds")))
+  saveRDS(RF_model, file.path("Output", species, paste0("Nothing_model_", i, ".rds")))
   
 } else {
   print("model already generated for this data")

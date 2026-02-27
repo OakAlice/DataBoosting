@@ -42,13 +42,14 @@ sample_rates <- list(Galea_Cat = 50, # could find a better way to store this, ma
 
 boost_methods <- c("Nothing", 
                    "Oversample", 
-                   "Overlap50", 
-                   "Overlap90", 
+                   # "Overlap50", 
+                   # "Overlap90", 
                    "SMOTE"
                    )
 
 # Running over each of the datasets ---------------------------------------
-all_species <- basename(list.dirs("Data", recursive = F))
+# all_species <- basename(list.dirs("Data", recursive = F))
+all_species <- c("Studd_Squirrel", "Ladds_Seal", "Dunford_Cat", "HarveyCaroll_Pangolin", "Yu_Duck", "Sparkes_Koala")
 for (species in all_species){
   
   # create the output directory
@@ -58,9 +59,7 @@ for (species in all_species){
   
   # Generate the features without anything
   data1 <- fread(file.path("Data", species, "Formatted_raw_data.csv"))
-  overlap_setting <- 0
-  method <- "Nothing"
-  source("Scripts/GenerateFeatures.R")
+  source(paste0("Scripts/BoostMethods/Nothing.R"))
   
   # repeating the entire process 3 times, so need to split out the test data
   data <- fread(file.path("Data", species, "Nothing_Feature_data.csv"))
@@ -81,7 +80,7 @@ for (species in all_species){
       # create a boosted model
       source(paste0("Scripts/BoostMethods/", method, ".R"))
       
-      # test the model
+      # now test the model
       test_data <- data %>% dplyr::filter(ID %in% test_IDs)
       source("Scripts/TestModel.R")
     }
