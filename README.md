@@ -5,7 +5,7 @@ Machine learning enables automated classification of behaviour from animal-borne
 ![Data Boosting Idea](Manuscript/Figures/OverviewDesign.png)
 
 ### Data
-The included data was pre-formatted from the original data sourced from online repos into standardised format in alternate github repository: [https://github.com/OakAlice/DataReformatting](https://github.com/OakAlice/DataReformatting).
+The included data was pre-formatted from the original data sourced from online repos into standardised format in alternate github repository: [https://github.com/OakAlice/DataReformatting](https://github.com/OakAlice/DataReformatting). All data was publically available online.
 
 ### Workflow
 To be filled in later...
