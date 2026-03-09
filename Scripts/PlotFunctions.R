@@ -14,5 +14,7 @@ my_theme <- function() {
     )
 }
 fave_colours <- c(
-  "coral", "goldenrod2", "khaki2", "aquamarine3", "turquoise2", "powderblue", "deepskyblue3", "plum", "lightpink1", "lavenderblush2")
+  "coral", "goldenrod2", "khaki2", 
+  "aquamarine3", "turquoise2", "powderblue", "deepskyblue3", 
+  "plum", "lightpink1", "lavenderblush2")
 

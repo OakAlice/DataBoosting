@@ -1,5 +1,4 @@
 # Ignore these directories
-Manuscripts/
 Data/
 Output/
 
@@ -15,7 +14,6 @@ Output/
 *.txt
 *.rda
 *.pdf
-*.png
 *.docx
 *.pptx
 *.svg

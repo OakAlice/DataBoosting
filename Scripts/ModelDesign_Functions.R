@@ -105,9 +105,7 @@ RFModelOptimisation <- function(feature_data, number_trees, mtry, max_depth){
     # remove bad features
     feature_data <- as.data.table(feature_data)
     
-    var <- ifelse(species == "Ferdinandy_Dog", 0.01, 0.3)
-    
-    clean_cols <- removeBadFeatures(feature_data, var_threshold = var, corr_threshold = 0.9)
+    clean_cols <- removeBadFeatures(feature_data, var_threshold = 0.3, corr_threshold = 0.9)
     clean_feature_data <- feature_data %>%
       select(c(!!!syms(clean_cols), "Activity", "ID", "Time")) %>% 
       na.omit()
@@ -136,10 +134,10 @@ RFModelOptimisation <- function(feature_data, number_trees, mtry, max_depth){
             val_IDs <- sample(unique(clean_feature_data$ID), ceiling(0.3*length(unique(clean_feature_data$ID))))
           }
           
+          # Separate into training and testing
           validation_data <- clean_feature_data %>% dplyr::filter(ID %in% val_IDs)
           training_data <- clean_feature_data %>% dplyr::filter(!ID %in% val_IDs)                      
           
-          # Separate into training and testing
           training_data <- training_data %>%
             select(-c(ID, Time)) %>%
             mutate(Activity = as.factor(Activity))

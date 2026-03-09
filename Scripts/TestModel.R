@@ -31,3 +31,6 @@ metrics <- compute_metrics(predicted_classes = as.factor(predictions_df$predicti
                            ground_truth_labels = as.factor(predictions_df$true_class))
 
 fwrite(metrics$metrics, file.path("Output", species, paste0(method, "_performance_", i, ".csv")))
+
+print("the final performance was:")
+print(metrics$metrics$F1[metrics$metrics$Behaviour == "WeightedOverall"])

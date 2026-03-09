@@ -1,14 +1,15 @@
 # Main script for data boosting chapter -----------------------------------
 
 # Set up ------------------------------------------------------------------
-# setwd("C:/Users/oaw001/OneDrive - University of the Sunshine Coast/DataBoosting")
-setwd("C:/Users/PC/OneDrive - University of the Sunshine Coast/DataBoosting")
+setwd("C:/Users/oaw001/OneDrive - University of the Sunshine Coast/DataBoosting")
+# setwd("C:/Users/PC/OneDrive - University of the Sunshine Coast/DataBoosting")
 
 set.seed(1000)
 
 pacman::p_load(
   tidyverse, 
   data.table,
+  caret,
   future,
   future.apply,
   tsfeatures,
@@ -21,7 +22,6 @@ source("Scripts/PerformanceTestingFunctions.R")
 source("Scripts/PlotFunctions.R")
 source("Scripts/ModelDesign_Functions.R")
 source("Scripts/GenerateFeatures_Functions.R")
-
 
 sample_rates <- list(Galea_Cat = 50, # could find a better way to store this, maybe read from csv...?
                      Dunford_Cat = 40,
@@ -47,6 +47,12 @@ boost_methods <- c("Nothing",
                    "SMOTE"
                    )
 
+
+# Delete all files from one or more conditions ----------------------------
+# old_files <- list.files(file.path("Output"), full.names = TRUE, recursive = TRUE)
+# keep_files <- list.files(file.path(base_path, "Data"), pattern = "Formatted_raw_data.csv", full.names = TRUE, recursive = TRUE)
+# file.remove(old_files)
+
 # Running over each of the datasets ---------------------------------------
 # all_species <- basename(list.dirs("Data", recursive = F))
 all_species <- c("Studd_Squirrel", "Ladds_Seal", "Dunford_Cat", "HarveyCaroll_Pangolin", "Yu_Duck", "Sparkes_Koala")
@@ -59,7 +65,16 @@ for (species in all_species){
   
   # Generate the features without anything
   data1 <- fread(file.path("Data", species, "Formatted_raw_data.csv"))
-  source(paste0("Scripts/BoostMethods/Nothing.R"))
+  if (file.exists(file.path("Data", species, "Nothing_Feature_data.csv"))){
+    print("basic features already generated")
+  } else { 
+    data <- fread(file.path("Data", species, "Formatted_raw_data.csv"))
+    generated_features_df <- generate_features_master(data, 
+                                                      sample_rate = sample_rates[[species]], 
+                                                      overlap_setting = 0, 
+                                                      window_setting = ifelse(sample_rate > 1, 2, 5))
+    fwrite(generated_features_df, file.path("Data", species, "Nothing_Feature_data.csv"))
+  }
   
   # repeating the entire process 3 times, so need to split out the test data
   data <- fread(file.path("Data", species, "Nothing_Feature_data.csv"))
@@ -102,12 +117,31 @@ results_df <- lapply(result_files, function(x){
 })
 result_df <- rbindlist(results_df)
 
-# plot the results
-ggplot(result_df %>% dplyr::filter(Behaviour == "WeightedOverall"),
-       aes(x = method, y = F1, colour = as.factor(method))) +
-  geom_point(size = 2) +
-  my_theme() +
+summary_df <- result_df %>%
+  group_by(Species, method) %>%
+  summarise(
+    n = n(),
+    mean = mean(F1, na.rm = TRUE),
+    se = sd(F1, na.rm = TRUE) / sqrt(n),
+    ci = 1.96 * se, # gives us the confidence intervals (I think??)
+    .groups = "drop"
+  )
+
+ggplot(summary_df,
+       aes(x = method,
+           y = mean,
+           colour = method)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = mean - ci,
+                    ymax = mean + ci),
+                width = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dotted", colour = "black") +
+  labs(x = "Boosting Method",
+       y = "Mean F1",
+       colour = "Method") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none") + 
+  my_theme() + 
   scale_colour_manual(values = fave_colours) +
-  facet_wrap(~Species)
-  
+  facet_wrap(~Species, ncol = 3)
 
