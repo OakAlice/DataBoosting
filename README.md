@@ -1,6 +1,6 @@
-## Making the Best of a Bad Dataset: Synthetic Solutions for the Cryptic, Rare, and the Dangerous
+## How Much Training Data Do You Actually Need/
 
-Machine learning enables automated classification of behaviour from animal-borne accelerometer datasets. These methods are, however, dependent on large training datasets representing each of the classes of interest. In wildlife research rare, cryptic, or logistically challenging species/behaviours tend to yield limited observations, restricting the use of these data-intensive classification approaches and often leaving small datasets and minority classes within the larger datasets, unusable. To overcome this limitation and boost the usability of small datasets, we evaluate a suite of data augmentation and synthetic sample generation strategies for increasing minority-class representation in accelerometer data.
+Machine learning enables automated classification of behaviour from animal-borne accelerometer datasets. These methods are, however, dependent on large training datasets representing each of the classes of interest. In wildlife research rare, cryptic, or logistically challenging species/behaviours tend to yield limited observations, restricting the use of these data-intensive classification approaches and often leaving small datasets and minority classes within the larger datasets, unusable. In Part 1 we address how much data is really needed in the first place. In Part 2 we attempt to overcome this limitation and boost the usability of small datasets, we evaluate a suite of data augmentation and synthetic sample generation strategies for increasing minority-class representation in accelerometer data.
 
 ![Data Boosting Idea](Manuscript/Figures/OverviewDesign.png)
 
