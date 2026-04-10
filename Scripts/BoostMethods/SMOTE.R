@@ -7,57 +7,64 @@
 #| Using the SMOTE function from the smotefamily package
 
 if (!file.exists(file.path("Output", species, paste0(method, "_model_", i, ".rds")))) {
-    
-  # begin with the original feature data but just the non-test IDs
+  
   data1 <- fread(file.path("Data", species, "Nothing_Feature_data.csv"))
   other_data <- data1 %>% dplyr::filter(!ID %in% test_IDs) 
   
-  # first step is to clean out the useless features
-  # needed to do this because the SMOTE cant handle NA values later on
+  # gotta get rid of the bad columns because SMOTE cant cope with NA values
   clean_cols <- removeBadFeatures(other_data, var_threshold = 0.3, corr_threshold = 0.9)
   other_data <- other_data %>%
     select(c(!!!syms(clean_cols), "Activity", "ID", "Time")) %>% 
     na.omit()
   
+  # calculate the aim (mean value) that we want to increase to
+  aim <- other_data %>%
+    count(Activity) %>%
+    summarise(mean = round(mean(n))) %>%
+    pull(mean)
+  
   # pull out the minority classes
   minorities <- other_data %>%
     count(Activity) %>%
-    mutate(mean = round(mean(n)),0) %>%
-    dplyr::filter(n < mean) %>%
+    dplyr::filter(n < aim) %>%
     pull(Activity)
   
-  minority_data <- other_data %>% dplyr::filter(Activity %in% minorities)
-  
-  # what value of K can I select
-  K_min <- minority_data %>%
-      count(Activity) %>%
-      summarise(min = min(n)-1) %>%
-      pull(min)
-  
-  # the smaller of 5 and the minimum
-  K_chosen <- min(c(K_min, 5))
+  # SMOTE each of the minority classes independently
+  synth_list <- lapply(minorities, function(minority_class) {
     
-  # select numeric feature data
-  minority_numeric <- minority_data %>% select(-Activity, -Time, -ID)
+    minority_data <- other_data %>% dplyr::filter(Activity == minority_class)
+    
+    K_min <- nrow(minority_data) - 1
+    K_chosen <- min(c(K_min, 5))
+    minority_numeric <- minority_data %>% select(-Activity, -Time, -ID)
+    
+    # calculate by how much to increase so we don't aggressively overshoot
+    dupe_by <- max(1, round(aim / nrow(minority_data)) - 1)
+    
+    dat_boosted <- smotefamily::SMOTE(X = minority_numeric,
+                                      target = minority_data$Activity,
+                                      K = K_chosen,
+                                      dup_size = dupe_by)
+    
+    dat_boosted <- dat_boosted$syn_data
+    dat_boosted$ID <- "Synth"
+    dat_boosted$Time <- NA
+    setnames(dat_boosted, "class", "Activity")
+    
+    # we have probably calculated too much so decrease it back down
+    n_needed <- aim - nrow(minority_data)
+    dat_boosted <- dat_boosted %>%
+      slice_sample(n = min(n_needed, nrow(dat_boosted)))
+    
+    return(dat_boosted)
+  })
   
-  # SMOTE the minority classes
-  dat_boosted <- smotefamily::SMOTE(X = minority_numeric,
-                                    target = minority_data$Activity,
-                                    K = K_chosen,
-                                    dup_size = 100
-  )
+  # combine all synthetic data and original
+  other_data <- rbind(other_data, rbindlist(synth_list, fill = TRUE))
   
-  # add in faux metadata so it gels with the rest of my code
-  dat_boosted <- dat_boosted$syn_data
-  dat_boosted$ID <- "Synth"
-  dat_boosted$Time <- NA
-  setnames(dat_boosted, "class", "Activity") # update the name of the columm
+  # save this data so I can visualise it later
+  fwrite(other_data, file.path("Data", species, paste0(method, "_", i, "_Feature_data.csv")))
   
-  # add this back to the data
-  other_data <- rbind(dat_boosted,
-                other_data)
-  
-  # now generate the model
   RF_model <- design_build_RF(other_data)  
   saveRDS(RF_model, file.path("Output", species, paste0(method, "_model_", i, ".rds")))
   

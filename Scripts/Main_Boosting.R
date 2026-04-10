@@ -1,8 +1,8 @@
 # Main script for data boosting chapter -----------------------------------
 
 # Set up ------------------------------------------------------------------
-setwd("C:/Users/oaw001/OneDrive - University of the Sunshine Coast/DataBoosting")
-# setwd("C:/Users/PC/OneDrive - University of the Sunshine Coast/DataBoosting")
+# setwd("C:/Users/oaw001/OneDrive - University of the Sunshine Coast/DataBoosting")
+setwd("C:/Users/PC/OneDrive - University of the Sunshine Coast/DataBoosting")
 
 set.seed(1000)
 
@@ -23,33 +23,19 @@ source("Scripts/PlotFunctions.R")
 source("Scripts/ModelDesign_Functions.R")
 source("Scripts/GenerateFeatures_Functions.R")
 
-sample_rates <- list(Galea_Cat = 50, # could find a better way to store this, maybe read from csv...?
-                     Dunford_Cat = 40,
-                     Jeantet_Turtle = 20,
-                     Ladds_Seal = 25,
-                     Maekawa_Gull = 25,
-                     Smit_Cat = 30,
-                     Studd_Squirrel = 1,
-                     Desantis_Rattlesnake = 1, 
-                     Vehkaoja_Dog = 100,
-                     Yu_Duck = 25,
-                     HarveyCaroll_Pangolin = 50,
-                     Pagano_Bear = 16,
-                     Sparkes_Koala = 50,
-                     Mauny_Goat = 5,
-                     Clemente_Echidna = 10
-                     )
+sample_rates <- fread("Data/DatasetCharacteristics.csv")
 
 boost_methods <- c("Nothing", 
                    "Oversample", 
-                   # "Overlap50", 
+                   # "Overlap50",
                    # "Overlap90", 
                    "SMOTE"
+                   # "ADSYN"
                    )
 
 
 # Delete all files from one or more conditions ----------------------------
-# old_files <- list.files(file.path("Output"), full.names = TRUE, recursive = TRUE)
+# old_files <- list.files(file.path("Output"), full.names = TRUE, pattern = "ADSYN_", recursive = TRUE)
 # keep_files <- list.files(file.path(base_path, "Data"), pattern = "Formatted_raw_data.csv", full.names = TRUE, recursive = TRUE)
 # file.remove(old_files)
 
@@ -57,6 +43,8 @@ boost_methods <- c("Nothing",
 # all_species <- basename(list.dirs("Data", recursive = F))
 all_species <- c("Studd_Squirrel", "Ladds_Seal", "Dunford_Cat", "HarveyCaroll_Pangolin", "Yu_Duck", "Sparkes_Koala")
 for (species in all_species){
+  
+  # species <- "Dunford_Cat"
   
   # create the output directory
   if (!dir.exists(paste0("Output/", species))){
@@ -72,7 +60,7 @@ for (species in all_species){
     generated_features_df <- generate_features_master(data, 
                                                       sample_rate = sample_rates[[species]], 
                                                       overlap_setting = 0, 
-                                                      window_setting = ifelse(sample_rate > 1, 2, 5))
+                                                      window_setting = ifelse(sample_rates[[species]] > 1, 2, 5))
     fwrite(generated_features_df, file.path("Data", species, "Nothing_Feature_data.csv"))
   }
   
@@ -84,6 +72,11 @@ for (species in all_species){
     group = sample(rep(1:3, length.out = length(unique_IDs)))
   )
   
+  # TODO: Change over all the save paths to be saved to the boosting output
+  if(!dir.exists(file.path("Output", species, "Boost"))){
+    dir.create(file.path("Output", species, "Boost"))
+  }
+  
   for (method in boost_methods){
     print(method)
     
@@ -94,6 +87,9 @@ for (species in all_species){
       
       # create a boosted model
       source(paste0("Scripts/BoostMethods/", method, ".R"))
+      
+      # visualise the feature space
+      source("Scripts/VisualiseFeatureSpace.R")
       
       # now test the model
       test_data <- data %>% dplyr::filter(ID %in% test_IDs)
@@ -113,12 +109,17 @@ results_df <- lapply(result_files, function(x){
   dat$Species <- basename(dirname(x))
   dat$fold <- str_split(basename(tools::file_path_sans_ext(x)), "_", simplify = TRUE)[[3]]
   dat$method<- str_split(basename(tools::file_path_sans_ext(x)), "_", simplify = TRUE)[[1]]
+  dat$Behaviour <- gsub("Class: ", "", dat$Behaviour)
   dat
 })
 result_df <- rbindlist(results_df)
 
+result_df$method <- factor(result_df$method, levels = c(
+  "Nothing", "Overlap50", "Overlap90", "Oversample", "SMOTE", "ADSYN"
+))
+
 summary_df <- result_df %>%
-  group_by(Species, method) %>%
+  group_by(Species, Behaviour, method) %>%
   summarise(
     n = n(),
     mean = mean(F1, na.rm = TRUE),
@@ -130,18 +131,17 @@ summary_df <- result_df %>%
 ggplot(summary_df,
        aes(x = method,
            y = mean,
-           colour = method)) +
+           colour = Behaviour)) +
   geom_point(size = 3) +
   geom_errorbar(aes(ymin = mean - ci,
                     ymax = mean + ci),
                 width = 0.5) +
-  geom_hline(yintercept = 0, linetype = "dotted", colour = "black") +
   labs(x = "Boosting Method",
        y = "Mean F1",
-       colour = "Method") +
+       colour = "Behaviour") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none") + 
   my_theme() + 
-  scale_colour_manual(values = fave_colours) +
+  scale_colour_manual(values = more_colours) +
   facet_wrap(~Species, ncol = 3)
 

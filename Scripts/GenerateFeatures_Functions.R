@@ -1,6 +1,6 @@
 # Generate Features -------------------------------------------------------
 
-generate_features_master <- function(data, sample_rate, overlap_setting, window_setting){
+generate_features_master <- function(data, sample_rate_choice, overlap_setting, window_setting){
   
   available_axes <- c("X", "Y", "Z")
   
@@ -14,8 +14,9 @@ generate_features_master <- function(data, sample_rate, overlap_setting, window_
     feature_data <- processDataPerID(data, 
                                      features_type = c("timeseries", "statistical"), 
                                      window_length = window_setting, 
-                                     sample_rate = sample_rate, 
-                                     overlap_percent = overlap_setting
+                                     sample_rate = sample_rate_choice, 
+                                     overlap_percent = overlap_setting,
+                                     available_axes = available_axes
     )
     
     generated_features[[id]] <- feature_data
@@ -26,7 +27,7 @@ generate_features_master <- function(data, sample_rate, overlap_setting, window_
 }
 
 # Function to process data for each ID
-processDataPerID <- function(id_raw_data, features_type, window_length, sample_rate, overlap_percent) {
+processDataPerID <- function(id_raw_data, features_type, window_length, sample_rate, overlap_percent, available_axes) {
   
   # Calculate window length and overlap
   samples_per_window <- window_length * sample_rate
@@ -49,7 +50,7 @@ processDataPerID <- function(id_raw_data, features_type, window_length, sample_r
     
     # Extract statistical features
     if ("statistical" %in% features_type) {
-      statistical_features <- generateStatisticalFeatures(window_chunk = window_chunk, down_Hz = sample_rate)
+      statistical_features <- generateStatisticalFeatures(window_chunk = window_chunk, down_Hz = sample_rate, available_axes = available_axes)
     }
     
     # Extract timeseries features and flatten
@@ -185,7 +186,7 @@ extractFftFeatures <- function(window_data, down_Hz) {
 
 
 # making this faster using := which modifies in place rather than copying and modifying
-generateStatisticalFeatures <- function(window_chunk, down_Hz) {
+generateStatisticalFeatures <- function(window_chunk, down_Hz, available_axes) {
   
   result <- data.table()
   

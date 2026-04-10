@@ -9,9 +9,9 @@ if (file.exists(file.path("Data", species, "Overlap50_Feature_data.csv"))){
 } else { 
   data <- fread(file.path("Data", species, "Formatted_raw_data.csv"))
   generated_features_df <- generate_features_master(data, 
-                                                    sample_rate = sample_rates[[species]], 
+                                                    sample_rate_choice = sample_rates[[species]], 
                                                     overlap_setting = 50, 
-                                                    window_setting = ifelse(sample_rate > 1, 2, 5))
+                                                    window_setting = ifelse(sample_rates[[species]] > 1, 2, 5))
   fwrite(generated_features_df, file.path("Data", species, "Overlap50_Feature_data.csv"))
 }
 
