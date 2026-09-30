@@ -33,7 +33,7 @@ generate_confusion_plot <- function(conf_matrix_padded, save_path) {
 }
 
 # Function to compute confusion matrix metrics
-compute_metrics <- function(predicted_classes, ground_truth_labels) {
+compute_metrics <- function(predicted_classes, ground_truth_labels, type = "multiclass") {
   # Compute confusion matrix
   confusion_matrix <- table(predicted_classes, ground_truth_labels)
   all_classes <- union(levels(predicted_classes), levels(ground_truth_labels))
@@ -43,46 +43,52 @@ compute_metrics <- function(predicted_classes, ground_truth_labels) {
                                dimnames = list(all_classes, all_classes))
   conf_matrix_padded[rownames(confusion_matrix), colnames(confusion_matrix)] <- confusion_matrix
   
-  # Calculate F1 score and other metrics using confusionMatrix from caret
-  confusion_mtx <- caret::confusionMatrix(conf_matrix_padded)
+  # now if binary or not
+  confusion_mtx <- if (type == "binary") {
+    caret::confusionMatrix(as.table(conf_matrix_padded), positive = "target")
+  } else {
+    caret::confusionMatrix(as.table(conf_matrix_padded))
+  }
   
   byClass <- confusion_mtx$byClass
-  
-  # If binary, convert named vector to 1-row matrix first
-  # fails in the desantis_rattlesnake condition if I dont do this
-  if (is.null(dim(byClass))) {
+  if (is.null(dim(byClass))) {                 # binary -> named vector
     byClass <- t(as.matrix(byClass))
-    rownames(byClass) <- colnames(conf_matrix_padded)[2]  # positive class
+    rownames(byClass) <- "target"
   }
   
   metrics <- data.frame(
     Behaviour  = rownames(byClass),
     Accuracy   = byClass[, "Balanced Accuracy"],
+    Sensitivity = byClass[, "Sensitivity"],
+    Specificity = byClass[, "Specificity"],
     Precision  = byClass[, "Precision"],
     Recall     = byClass[, "Recall"],
     F1         = byClass[, "F1"],
-    Prevalence = byClass[, "Prevalence"] * length(predicted_classes),
+    Detection_Rate = byClass[, "Detection Rate"],
+    Prevalence = byClass[, "Prevalence"],
     row.names  = NULL
   )
   
-  # Add prevelance weighted metrics as the last row
-  total_counts <- sum(metrics$Prevalence)
-  # set all the NA values to 0
-  metrics[is.na(metrics)] <- 0 # do not na.rm = TRUE otherwise the model can cheat and move towards not predicting classes at all
-  overall_metrics <- data.frame(
-    Behaviour   = "WeightedOverall",
-    Accuracy    = confusion_mtx$overall["Accuracy"],   # still raw overall accuracy
-    Precision   = sum(metrics$Precision * metrics$Prevalence) / total_counts,
-    Recall      = sum(metrics$Recall * metrics$Prevalence) / total_counts,
-    F1          = sum(metrics$F1 * metrics$Prevalence) / total_counts,
-    Prevalence = NA,
-    row.names  = NULL
-  )
-
-  metrics <- rbind(
-    metrics,
-    overall_metrics
-  )
+  if (type == "multiclass"){
+    # Add prevelance weighted metrics as the last row
+    total_counts <- sum(metrics$Prevalence)
+    # set all the NA values to 0
+    metrics[is.na(metrics)] <- 0 # do not na.rm = TRUE otherwise the model can cheat and move towards not predicting classes at all
+    overall_metrics <- data.frame(
+      Behaviour   = "WeightedOverall",
+      Accuracy    = confusion_mtx$overall["Accuracy"],   # still raw overall accuracy
+      Precision   = sum(metrics$Precision * metrics$Prevalence) / total_counts,
+      Recall      = sum(metrics$Recall * metrics$Prevalence) / total_counts,
+      F1          = sum(metrics$F1 * metrics$Prevalence) / total_counts,
+      Prevalence = NA,
+      row.names  = NULL
+    )
+  
+    metrics <- rbind(
+      metrics,
+      overall_metrics
+    )
+  }
   
   return(list(metrics = metrics,
               conf_matrix_padded = conf_matrix_padded))
