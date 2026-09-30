@@ -1,20 +1,20 @@
 # Generate Features -------------------------------------------------------
 
-generate_features_master <- function(data, sample_rate_choice, overlap_setting, window_setting){
+generate_features_master <- function(data, sample_rate, overlap_setting, window_setting){
   
   available_axes <- c("X", "Y", "Z")
   
   generated_features <- list()
-  for (id in unique(data1$ID)){
+  for (id in unique(data$ID)){
     
-    data <- data1 %>% 
+    data1 <- data %>% 
       dplyr::filter(ID == id) %>% 
       as.data.table()
     
-    feature_data <- processDataPerID(data, 
+    feature_data <- processDataPerID(data1, 
                                      features_type = c("timeseries", "statistical"), 
                                      window_length = window_setting, 
-                                     sample_rate = sample_rate_choice, 
+                                     sample_rate = sample_rate, 
                                      overlap_percent = overlap_setting,
                                      available_axes = available_axes
     )

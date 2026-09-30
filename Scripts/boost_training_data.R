@@ -119,8 +119,10 @@ noise_minority <- function(training_data, metadata_cols, target_col, minority_cl
   return (boosted_data)
 }
 
-DTW_minority <- function(raw_data, feature_data, target_col, minority_classes,
-                         axis_cols, Hz, window_s, n_avg = 3) {
+DTW_minority <- function(raw_data, target_col, minority_classes,
+                         Hz, window_s, n_avg = 3) {
+  
+  axis_cols <- c("X", "Y", "Z") # hardcoded because I am a sloppy ugly coder. also a chud.
   
   win_len  <- window_s * Hz
   target_n <- round(mean(table(feature_data[[target_col]])))
@@ -165,13 +167,13 @@ DTW_minority <- function(raw_data, feature_data, target_col, minority_classes,
   synth_raw <- bind_rows(synth_raw_list)
   if (nrow(synth_raw) == 0) return(feature_data)
   
-  synth_features <- generate_features_master(synth_raw,
+  synth_features <- generate_features_master(data = synth_raw,
                                              sample_rate = Hz,
                                              overlap_setting = 0,
                                              window_setting  = window_s)
-  
-  boosted_data <- bind_rows(feature_data, synth_features)
-  return(boosted_data)
+  synth_features$ID <- "Synth" # so they dont get mixed in with the real data
+
+  return(synth_features)
 }
 
 
@@ -186,9 +188,10 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
   #' Hz: frequency of the sampling 
   #' path_to_features: In case these have already been generated, saves a lot of time. Ugly tho.
   
-  if (method %in% c("Nothing", "Oversample", "SMOTE", "ADSYN", "Random_noise")){
+  if (method %in% c("Nothing", "Oversample", "SMOTE", "ADSYN", "Random_noise", "DTW")){
     # these methods use the feature data directly (only generate once)
     if (file.exists(path_to_features)){
+      print("reading in the original features")
       feature_data <- fread(path_to_features)
       feature_data <- feature_data %>% dplyr::filter(!ID %in% test_IDs)
     } else {
@@ -221,15 +224,16 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
     # overlap by the percentage defined in the string name
     # NOTE: have put some checks about whether the file exists to just save me time
     # this is bad code that doesnt fit in with the rest of the workflow uuughghghghgh
+    # Note... should I change this so that only windows with a minority in them are generated?
     
     overlap_percent <- as.numeric(gsub("Overlap", "", method))
     
     if (file.exists(file.path("Data", species, paste0("Overlap", overlap_percent, "_Feature_data.csv")))){
-      boosted_data <- fread(file.path("Data", species, "Overlap50_Feature_data.csv"))
+      boosted_data <- fread(file.path("Data", species, paste0("Overlap", overlap_percent, "_Feature_data.csv")))
       
     } else { 
-      data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
-      boosted_data <- generate_features_master(data = training_data,
+      raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
+      boosted_data <- generate_features_master(data = raw_data,
                                                sample_rate_choice = Hz, 
                                                overlap_setting = overlap_percent, 
                                                window_setting = ifelse(Hz > 1, 2, 5))
@@ -237,16 +241,28 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
     }
   
   } else if (method == "DTW") {
-    boosted_data <- DTW_minority(raw_data, feature_data, target_col, minority_classes,
-                             axis_cols, Hz, window_s, n_avg = 3)
+    already_done <- file.path(data_path, paste0("DTW_", i, "_features.csv"))
     
-   
-   
+    if(file.exists(!already_done)){
+      raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
+      synth_features <- DTW_minority(raw_data, feature_data, target_col, minority_classes,
+                               Hz, window_s = ifelse(Hz > 1, 2, 5), n_avg = 3)
+      synth_features <- synth_features %>% mutate(Time = "NA")
+      boosted_data <- bind_rows(feature_data, synth_features)
+      
+      # save this (was quite time consuming I guess)
+      fwrite(boosted_data, file.path(data_path, paste0("DTW_", i, "_features.csv")))
+      
+    } else {
+      boosted_data <- fread(file.path(data_path, paste0("DTW_", i, "_features.csv")))
+    }
+                              
+  } else {
+    print("unsure what this method is. Please choose from defined list of options.")
   }
   
   
   
   
   return (boosted_data)
-  
 }

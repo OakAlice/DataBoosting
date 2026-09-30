@@ -13,10 +13,13 @@ pacman::p_load(
   dtwclust
 )
 
-source("Scripts/PerformanceTestingFunctions.R")
-source("Scripts/ModelDesign_Functions.R")
-source("Scripts/GenerateFeatures_Functions.R")
+# Functions
+source("Scripts/generate_features.R")
+source("Scripts/boost_training_data.R")
+source("Scripts/model_optimisation.R")
+source("Scripts/performance_testing.R")
 
+# variables
 set.seed(1000)
 
 settings <- fread("Data/DatasetCharacteristics.csv")
@@ -27,6 +30,8 @@ boost_methods <- c("Nothing",
                    # "Overlap90", 
                    # "SMOTE",
                    # "ADSYN",
+                   # "DTW",
+                   # "Random_noise"
                    # "Rotation",
                    # "Decomposition",
                    # "GAN"
@@ -35,9 +40,9 @@ boost_methods <- c("Nothing",
 # all_species <- basename(list.dirs("Data", recursive = F))
 all_species <- c("Studd_Squirrel", "Ladds_Seal", "Dunford_Cat", "HarveyCaroll_Pangolin", "Yu_Duck", "Sparkes_Koala")
 
-# important variables
 metadata_cols <- c("Activity", "ID", "Time")
 target_col <- "Activity"
+type <- "binary"
 
 # File directory ----------------------------------------------------------
 # for each of the defined species check data exists and create an output folder

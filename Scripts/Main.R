@@ -18,55 +18,58 @@ for (species in all_species){
   # relabel the data to binary (target vs other)
   if (!file.exists(file.path(data_path, "Relabelled_raw_data.csv"))){
     # Generate the base features
-    data1 <- fread(file.path(data_path, "Formatted_raw_data.csv"))
+    raw_data <- fread(file.path(data_path, "Formatted_raw_data.csv"))
     
     # select the minority class that I want to investigate...
     target <- settings$minorityTarget[settings$species == species]
-    data1$Activity <- ifelse(data1$Activity == target, "target", "other")
+    raw_data$Activity <- ifelse(data1$Activity == target, "target", "other")
     # and save this again
-    fwrite(data1, file.path(data_path, "Relabelled_raw_data.csv"))
+    fwrite(raw_data, file.path(data_path, "Relabelled_raw_data.csv"))
   } else {
-    data1 <- fread(file.path(data_path, "Relabelled_raw_data.csv"))
+    print("already relabelled")
+    raw_data <- fread(file.path(data_path, "Relabelled_raw_data.csv"))
   }
 
   # now make the features # this has to happpen here for the test data to exist
   if (file.exists(file.path(data_path, "Nothing_Feature_data.csv"))){
     print("basic features already generated")
-    data <- fread(file.path(data_path, "Nothing_Feature_data.csv"))
+    feature_data <- fread(file.path(data_path, "Nothing_Feature_data.csv"))
   } else { 
     generated_features_df <- generate_features_master(data1, 
                                                       sample_rate = settings$Hz[settings$species == species], 
                                                       overlap_setting = 0, 
                                                       window_setting = ifelse(settings$Hz[settings$species == species] > 1, 2, 5))
     fwrite(generated_features_df, file.path(data_path, "Nothing_Feature_data.csv"))
-    data <- generated_features_df
+    feature_data <- generated_features_df
   }
   
   # repeating the entire process 3 times, so need to split out the test data
-  unique_IDs <- unique(data$ID)
+  unique_IDs <- unique(feature_data$ID)
   ID_groups <- data.frame(
     ID = unique_IDs,
     group = sample(rep(1:3, length.out = length(unique_IDs)))
   )
   
   for (method in boost_methods){
+    # method <- "DTW"
     print(method)
     for (i in 1:3){
       print(i)
       # define the test IDs for this round and subset out the data
       test_IDs <- ID_groups$ID[ID_groups$group == i]
-      test_data <- data %>% dplyr::filter(ID %in% test_IDs)
+      test_data <- feature_data %>% dplyr::filter(ID %in% test_IDs)
       
       # now boost the training samples
-      training_data <- data1 %>% dplyr::filter(!ID %in% test_IDs)
-      boosted_data <- boost_training_data(training_data, target_col,
-                                          minority_classes = "target",
-                                          method = method, 
-                                          path_to_features = , # in case has already been generated
-                                          test_IDs = test_IDs) # ugly code but saves me time :(
-      
-      # visualise the feature space
-      # source("Scripts/VisualiseFeatureSpace.R")
+      training_data <- raw_data %>% dplyr::filter(!ID %in% test_IDs)
+      boosted_data <- boost_training_data(training_data, 
+                                          metadata_cols, 
+                                          target_col, 
+                                          minority_classes = c("target"), 
+                                          method, 
+                                          Hz = settings$Hz[settings$species == species], 
+                                          # next things are if the base features have already been ganeerated
+                                          path_to_features = file.path(data_path, "Nothing_Feature_data.csv"), 
+                                          test_ids = test_IDs)
       
       # build a model with the boosted training data
       RF_model <- design_build_RF(boosted_data, type, metadata_cols)  
@@ -74,23 +77,13 @@ for (species in all_species){
       # test this boosted model on the unchanged test data
       metrics <- test_model(type = "binary", RF_model, test_data, metadata_cols, target_col)
       
-      # save the output
+      # save the performance output
       fwrite(metrics$metrics, file.path("Output", species, paste0(method, "_performance_", i, ".csv")))
       
     }
   }
   
-  
-  
-  
 }
-
-# UMAP generation ---------------------------------------------------------
-# Now, for each augmentation method, generate the UMAP
-
-
-
-
 
 # Analysis ----------------------------------------------------------------
 # just very basic for now
