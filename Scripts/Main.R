@@ -9,7 +9,7 @@ source("Scripts/config.R") # file with all the config infomation for the analysi
 # Running over each of the datasets ---------------------------------------
 for (species in all_species){
   
-  # species <- "Dunford_Cat"
+  # species <- "Studd_Squirrel"
   
   # create the save paths 
   data_path <- file.path("Data", species)
@@ -22,7 +22,7 @@ for (species in all_species){
     
     # select the minority class that I want to investigate...
     target <- settings$minorityTarget[settings$species == species]
-    raw_data$Activity <- ifelse(data1$Activity == target, "target", "other")
+    raw_data$Activity <- ifelse(raw_data$Activity == target, "target", "other")
     # and save this again
     fwrite(raw_data, file.path(data_path, "Relabelled_raw_data.csv"))
   } else {
@@ -44,11 +44,8 @@ for (species in all_species){
   }
   
   # repeating the entire process 3 times, so need to split out the test data
-  unique_IDs <- unique(feature_data$ID)
-  ID_groups <- data.frame(
-    ID = unique_IDs,
-    group = sample(rep(1:3, length.out = length(unique_IDs)))
-  )
+  ID_groups <- make_ID_groups(feature_data, target_col = target_col, k = 3,
+                              priority_classes = "target") 
   
   for (method in boost_methods){
     # method <- "DTW"
@@ -82,7 +79,6 @@ for (species in all_species){
       
     }
   }
-  
 }
 
 # Analysis ----------------------------------------------------------------
@@ -100,7 +96,7 @@ results_df <- lapply(result_files, function(x){
 result_df <- rbindlist(results_df)
 
 result_df$method <- factor(result_df$method, levels = c(
-  "Nothing", "Overlap50", "Overlap90", "Oversample", "SMOTE", "ADSYN"
+  "Nothing", "Overlap50", "Overlap90", "Oversample", "SMOTE", "ADSYN", "RandomNoise"
 ))
 
 summary_df <- result_df %>%

@@ -14,6 +14,7 @@ pacman::p_load(
 )
 
 # Functions
+source("Scripts/helpers.R")
 source("Scripts/generate_features.R")
 source("Scripts/boost_training_data.R")
 source("Scripts/model_optimisation.R")
@@ -24,14 +25,14 @@ set.seed(1000)
 
 settings <- fread("Data/DatasetCharacteristics.csv")
 
-boost_methods <- c("Nothing", 
-                   "Oversample", 
-                   "Overlap50"
+boost_methods <- c(#"Nothing", 
+                   #"Oversample", 
+                   # "Overlap50"
                    # "Overlap90", 
                    # "SMOTE",
                    # "ADSYN",
-                   # "DTW",
-                   # "Random_noise"
+                   "DTW",
+                   "RandomNoise"
                    # "Rotation",
                    # "Decomposition",
                    # "GAN"

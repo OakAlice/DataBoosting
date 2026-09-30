@@ -24,8 +24,8 @@ design_build_RF <- function(data, type, metadata_cols){
       )
     },
     bounds = bounds,
-    init_points = 2,
-    n_iter = 5,
+    init_points = 4,
+    n_iter = 6,
     acq = "ucb",
     kappa = 2.576 
   )
@@ -132,10 +132,10 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
             all_IDs <- unique(clean_feature_data$ID)
             real_IDs <- setdiff(all_IDs, "Synth")
             # Sample 30% of real IDs for test
-            val_IDs <- sample(real_IDs, ceiling(0.3 * length(real_IDs)))
+            val_IDs <- sample(real_IDs, ceiling(0.2 * length(real_IDs)))
             
           } else {
-            val_IDs <- sample(unique(clean_feature_data$ID), ceiling(0.3*length(unique(clean_feature_data$ID))))
+            val_IDs <- sample(unique(clean_feature_data$ID), ceiling(0.2*length(unique(clean_feature_data$ID))))
           }
           
           # Separate into training and testing
@@ -150,6 +150,14 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
             select(-c(ID, Time)) %>%
             mutate(Activity = as.factor(Activity))
           
+          # stage <- "split"
+          # # debugging statements so I can see why it fails
+          # dbg("rep", i, "| train:", nrow(training_data), "val:", nrow(validation_data))
+          # dbg("train classes:", paste(names(table(training_data$Activity)),
+          #                             table(training_data$Activity), sep = "=", collapse = " "))
+          # dbg("val classes:  ", paste(names(table(validation_data$Activity)),
+          #                             table(validation_data$Activity), sep = "=", collapse = " "))
+          
         }, error = function(e) {
           message("Error in data splitting: ", e$message)
         })
@@ -162,6 +170,11 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
         class_weights <- 1 / class_freq
         class_weights <- class_weights / sum(class_weights)
         weight <- class_weights[training_data$Activity]
+        
+        # this is added in to prevent the sample fraction too small error
+        if (nrow(training_data) < 10 || nlevels(training_data$Activity) < 2) {
+          stop("Training fold unusable, need to skip")
+        }
         
         RF_model <- ranger(
           dependent.variable.name = "Activity",
@@ -204,7 +217,7 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
       
       
       # Store the F1 score
-      f1_scores[[i]] <- metrics$metrics$F1
+      f1_scores[[i]] <- metrics$metrics$F1 + runif(1, 0, 1e-6) # jitter to prevent convergence
     }
     
     #### Calculate average F1-scors

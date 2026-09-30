@@ -1,0 +1,1620 @@
+14:57:14 | rep 1 | train: 980 val: 667 
+14:57:14 | train classes: other=634 target=346 
+14:57:14 | val classes:   other=498 target=169 
+14:57:14 | rep 2 | train: 1073 val: 574 
+14:57:14 | train classes: other=725 target=348 
+14:57:14 | val classes:   other=407 target=167 
+14:57:14 | rep 3 | train: 914 val: 733 
+14:57:14 | train classes: other=567 target=347 
+14:57:14 | val classes:   other=565 target=168 
+14:57:14 | rep 1 | train: 1301 val: 346 
+14:57:14 | train classes: other=953 target=348 
+14:57:14 | val classes:   other=179 target=167 
+14:57:14 | rep 2 | train: 1348 val: 299 
+14:57:14 | train classes: other=928 target=420 
+14:57:14 | val classes:   other=204 target=95 
+14:57:15 | rep 3 | train: 914 val: 733 
+14:57:15 | train classes: other=567 target=347 
+14:57:15 | val classes:   other=565 target=168 
+14:57:15 | rep 1 | train: 1272 val: 375 
+14:57:15 | train classes: other=853 target=419 
+14:57:15 | val classes:   other=279 target=96 
+14:57:16 | rep 2 | train: 1113 val: 534 
+14:57:16 | train classes: other=695 target=418 
+14:57:16 | val classes:   other=437 target=97 
+14:57:16 | rep 3 | train: 1276 val: 371 
+14:57:16 | train classes: other=928 target=348 
+14:57:16 | val classes:   other=204 target=167 
+14:57:16 | rep 1 | train: 1073 val: 574 
+14:57:16 | train classes: other=725 target=348 
+14:57:16 | val classes:   other=407 target=167 
+14:57:17 | rep 2 | train: 1348 val: 299 
+14:57:17 | train classes: other=928 target=420 
+14:57:17 | val classes:   other=204 target=95 
+14:57:17 | rep 3 | train: 1215 val: 432 
+14:57:17 | train classes: other=867 target=348 
+14:57:17 | val classes:   other=265 target=167 
+14:57:19 | rep 1 | train: 1206 val: 441 
+14:57:19 | train classes: other=786 target=420 
+14:57:19 | val classes:   other=346 target=95 
+14:57:19 | rep 2 | train: 1149 val: 498 
+14:57:19 | train classes: other=800 target=349 
+14:57:19 | val classes:   other=332 target=166 
+14:57:19 | rep 3 | train: 1066 val: 581 
+14:57:19 | train classes: other=720 target=346 
+14:57:19 | val classes:   other=412 target=169 
+14:57:21 | rep 1 | train: 1113 val: 534 
+14:57:21 | train classes: other=695 target=418 
+14:57:21 | val classes:   other=437 target=97 
+14:57:22 | rep 2 | train: 1113 val: 534 
+14:57:22 | train classes: other=695 target=418 
+14:57:22 | val classes:   other=437 target=97 
+14:57:22 | rep 3 | train: 914 val: 733 
+14:57:22 | train classes: other=567 target=347 
+14:57:22 | val classes:   other=565 target=168 
+14:57:24 | rep 1 | train: 1134 val: 513 
+14:57:24 | train classes: other=786 target=348 
+14:57:24 | val classes:   other=346 target=167 
+14:57:24 | rep 2 | train: 1225 val: 422 
+14:57:24 | train classes: other=878 target=347 
+14:57:24 | val classes:   other=254 target=168 
+14:57:24 | rep 3 | train: 1066 val: 581 
+14:57:24 | train classes: other=720 target=346 
+14:57:24 | val classes:   other=412 target=169 
+14:57:26 | rep 1 | train: 1276 val: 371 
+14:57:26 | train classes: other=928 target=348 
+14:57:26 | val classes:   other=204 target=167 
+14:57:26 | rep 2 | train: 1056 val: 591 
+14:57:26 | train classes: other=709 target=347 
+14:57:26 | val classes:   other=423 target=168 
+14:57:26 | rep 3 | train: 1225 val: 422 
+14:57:26 | train classes: other=878 target=347 
+14:57:26 | val classes:   other=254 target=168 
+14:57:28 | rep 1 | train: 1073 val: 574 
+14:57:28 | train classes: other=725 target=348 
+14:57:28 | val classes:   other=407 target=167 
+14:57:28 | rep 2 | train: 1134 val: 513 
+14:57:28 | train classes: other=786 target=348 
+14:57:28 | val classes:   other=346 target=167 
+14:57:29 | rep 3 | train: 1215 val: 432 
+14:57:29 | train classes: other=867 target=348 
+14:57:29 | val classes:   other=265 target=167 
+14:57:31 | rep 1 | train: 1159 val: 488 
+14:57:31 | train classes: other=811 target=348 
+14:57:31 | val classes:   other=321 target=167 
+14:57:31 | rep 2 | train: 1073 val: 574 
+14:57:31 | train classes: other=725 target=348 
+14:57:31 | val classes:   other=407 target=167 
+14:57:31 | rep 3 | train: 1073 val: 574 
+14:57:31 | train classes: other=725 target=348 
+14:57:31 | val classes:   other=407 target=167 
+14:57:33 | rep 1 | train: 1046 val: 805 
+14:57:33 | train classes: other=814 target=232 
+14:57:33 | val classes:   other=639 target=166 
+14:57:33 | rep 2 | train: 1353 val: 498 
+14:57:33 | train classes: other=1083 target=270 
+14:57:33 | val classes:   other=370 target=128 
+14:57:33 | rep 3 | train: 1624 val: 227 
+14:57:33 | train classes: other=1310 target=314 
+14:57:33 | val classes:   other=143 target=84 
+14:57:34 | rep 1 | train: 1376 val: 475 
+14:57:34 | train classes: other=1107 target=269 
+14:57:34 | val classes:   other=346 target=129 
+14:57:34 | rep 2 | train: 1568 val: 283 
+14:57:34 | train classes: other=1177 target=391 
+14:57:34 | val classes:   other=276 target=7 
+14:57:35 | rep 3 | train: 1563 val: 288 
+14:57:35 | train classes: other=1261 target=302 
+14:57:35 | val classes:   other=192 target=96 
+14:57:35 | rep 1 | train: 1387 val: 464 
+14:57:35 | train classes: other=1157 target=230 
+14:57:35 | val classes:   other=296 target=168 
+14:57:36 | rep 2 | train: 1308 val: 543 
+14:57:36 | train classes: other=1000 target=308 
+14:57:36 | val classes:   other=453 target=90 
+14:57:36 | rep 3 | train: 1308 val: 543 
+14:57:36 | train classes: other=1000 target=308 
+14:57:36 | val classes:   other=453 target=90 
+14:57:36 | rep 1 | train: 1471 val: 380 
+14:57:36 | train classes: other=1156 target=315 
+14:57:36 | val classes:   other=297 target=83 
+14:57:36 | rep 2 | train: 1143 val: 708 
+14:57:36 | train classes: other=835 target=308 
+14:57:36 | val classes:   other=618 target=90 
+14:57:36 | rep 3 | train: 1471 val: 380 
+14:57:36 | train classes: other=1156 target=315 
+14:57:36 | val classes:   other=297 target=83 
+14:57:37 | rep 1 | train: 1245 val: 606 
+14:57:37 | train classes: other=942 target=303 
+14:57:37 | val classes:   other=511 target=95 
+14:57:37 | rep 2 | train: 1613 val: 238 
+14:57:37 | train classes: other=1260 target=353 
+14:57:37 | val classes:   other=193 target=45 
+14:57:37 | rep 3 | train: 1563 val: 288 
+14:57:37 | train classes: other=1261 target=302 
+14:57:37 | val classes:   other=192 target=96 
+14:57:38 | rep 1 | train: 1670 val: 181 
+14:57:38 | train classes: other=1284 target=386 
+14:57:38 | val classes:   other=169 target=12 
+14:57:38 | rep 2 | train: 1670 val: 181 
+14:57:38 | train classes: other=1284 target=386 
+14:57:38 | val classes:   other=169 target=12 
+14:57:38 | rep 3 | train: 1234 val: 617 
+14:57:38 | train classes: other=1003 target=231 
+14:57:38 | val classes:   other=450 target=167 
+14:57:41 | rep 1 | train: 1563 val: 288 
+14:57:41 | train classes: other=1261 target=302 
+14:57:41 | val classes:   other=192 target=96 
+14:57:41 | rep 2 | train: 1471 val: 380 
+14:57:41 | train classes: other=1156 target=315 
+14:57:41 | val classes:   other=297 target=83 
+14:57:41 | rep 3 | train: 1670 val: 181 
+14:57:41 | train classes: other=1284 target=386 
+14:57:41 | val classes:   other=169 target=12 
+14:57:43 | rep 1 | train: 1624 val: 227 
+14:57:43 | train classes: other=1310 target=314 
+14:57:43 | val classes:   other=143 target=84 
+14:57:43 | rep 2 | train: 1613 val: 238 
+14:57:43 | train classes: other=1260 target=353 
+14:57:43 | val classes:   other=193 target=45 
+14:57:43 | rep 3 | train: 1364 val: 487 
+14:57:43 | train classes: other=1133 target=231 
+14:57:43 | val classes:   other=320 target=167 
+14:57:45 | rep 1 | train: 1552 val: 299 
+14:57:45 | train classes: other=1211 target=341 
+14:57:45 | val classes:   other=242 target=57 
+14:57:45 | rep 2 | train: 1670 val: 181 
+14:57:45 | train classes: other=1284 target=386 
+14:57:45 | val classes:   other=169 target=12 
+14:57:46 | rep 3 | train: 1188 val: 663 
+14:57:46 | train classes: other=918 target=270 
+14:57:46 | val classes:   other=535 target=128 
+14:57:48 | rep 1 | train: 1563 val: 288 
+14:57:48 | train classes: other=1261 target=302 
+14:57:48 | val classes:   other=192 target=96 
+14:57:49 | rep 2 | train: 1624 val: 227 
+14:57:49 | train classes: other=1310 target=314 
+14:57:49 | val classes:   other=143 target=84 
+14:57:50 | rep 3 | train: 1376 val: 475 
+14:57:50 | train classes: other=1107 target=269 
+14:57:50 | val classes:   other=346 target=129 
+14:57:53 | rep 1 | train: 1791 val: 489 
+14:57:53 | train classes: other=1404 target=387 
+14:57:53 | val classes:   other=321 target=168 
+14:57:53 | rep 2 | train: 1572 val: 708 
+14:57:53 | train classes: other=1107 target=465 
+14:57:53 | val classes:   other=618 target=90 
+14:57:53 | rep 3 | train: 1848 val: 432 
+14:57:53 | train classes: other=1422 target=426 
+14:57:53 | val classes:   other=303 target=129 
+14:57:53 | rep 1 | train: 1572 val: 708 
+14:57:53 | train classes: other=1107 target=465 
+14:57:53 | val classes:   other=618 target=90 
+14:57:54 | rep 2 | train: 1924 val: 356 
+14:57:54 | train classes: other=1497 target=427 
+14:57:54 | val classes:   other=228 target=128 
+14:57:54 | rep 3 | train: 1865 val: 415 
+14:57:54 | train classes: other=1401 target=464 
+14:57:54 | val classes:   other=324 target=91 
+14:57:54 | rep 1 | train: 1879 val: 401 
+14:57:54 | train classes: other=1414 target=465 
+14:57:54 | val classes:   other=311 target=90 
+14:57:55 | rep 2 | train: 1924 val: 356 
+14:57:55 | train classes: other=1497 target=427 
+14:57:55 | val classes:   other=228 target=128 
+14:57:55 | rep 3 | train: 1675 val: 605 
+14:57:55 | train classes: other=1289 target=386 
+14:57:55 | val classes:   other=436 target=169 
+14:57:55 | rep 1 | train: 2042 val: 238 
+14:57:55 | train classes: other=1570 target=472 
+14:57:55 | val classes:   other=155 target=83 
+14:57:55 | rep 2 | train: 1675 val: 605 
+14:57:55 | train classes: other=1289 target=386 
+14:57:55 | val classes:   other=436 target=169 
+14:57:55 | rep 3 | train: 1879 val: 401 
+14:57:55 | train classes: other=1414 target=465 
+14:57:55 | val classes:   other=311 target=90 
+14:57:57 | rep 1 | train: 2042 val: 238 
+14:57:57 | train classes: other=1570 target=472 
+14:57:57 | val classes:   other=155 target=83 
+14:57:57 | rep 2 | train: 1910 val: 370 
+14:57:57 | train classes: other=1522 target=388 
+14:57:57 | val classes:   other=203 target=167 
+14:57:57 | rep 3 | train: 1498 val: 782 
+14:57:57 | train classes: other=1110 target=388 
+14:57:57 | val classes:   other=615 target=167 
+14:57:58 | rep 1 | train: 1923 val: 357 
+14:57:58 | train classes: other=1452 target=471 
+14:57:58 | val classes:   other=273 target=84 
+14:57:59 | rep 2 | train: 1613 val: 667 
+14:57:59 | train classes: other=1227 target=386 
+14:57:59 | val classes:   other=498 target=169 
+14:57:59 | rep 3 | train: 1805 val: 475 
+14:57:59 | train classes: other=1417 target=388 
+14:57:59 | val classes:   other=308 target=167 
+14:58:00 | rep 1 | train: 1879 val: 401 
+14:58:00 | train classes: other=1376 target=503 
+14:58:00 | val classes:   other=349 target=52 
+14:58:00 | rep 2 | train: 1729 val: 551 
+14:58:00 | train classes: other=1342 target=387 
+14:58:00 | val classes:   other=383 target=168 
+14:58:00 | rep 3 | train: 1997 val: 283 
+14:58:00 | train classes: other=1449 target=548 
+14:58:00 | val classes:   other=276 target=7 
+14:58:01 | rep 1 | train: 1807 val: 473 
+14:58:01 | train classes: other=1337 target=470 
+14:58:01 | val classes:   other=388 target=85 
+14:58:01 | rep 2 | train: 1791 val: 489 
+14:58:01 | train classes: other=1404 target=387 
+14:58:01 | val classes:   other=321 target=168 
+14:58:02 | rep 3 | train: 1541 val: 739 
+14:58:02 | train classes: other=1153 target=388 
+14:58:02 | val classes:   other=572 target=167 
+14:58:03 | rep 1 | train: 1848 val: 432 
+14:58:03 | train classes: other=1460 target=388 
+14:58:03 | val classes:   other=265 target=167 
+14:58:03 | rep 2 | train: 1910 val: 370 
+14:58:03 | train classes: other=1484 target=426 
+14:58:03 | val classes:   other=241 target=129 
+14:58:03 | rep 3 | train: 1834 val: 446 
+14:58:03 | train classes: other=1447 target=387 
+14:58:03 | val classes:   other=278 target=168 
+14:58:04 | rep 1 | train: 1541 val: 739 
+14:58:04 | train classes: other=1153 target=388 
+14:58:04 | val classes:   other=572 target=167 
+14:58:05 | rep 2 | train: 1865 val: 415 
+14:58:05 | train classes: other=1401 target=464 
+14:58:05 | val classes:   other=324 target=91 
+14:58:05 | rep 3 | train: 1879 val: 401 
+14:58:05 | train classes: other=1414 target=465 
+14:58:05 | val classes:   other=311 target=90 
+14:59:49 | rep 1 | train: 1200 val: 447 
+14:59:49 | train classes: other=853 target=347 
+14:59:49 | val classes:   other=279 target=168 
+14:59:49 | rep 2 | train: 1348 val: 299 
+14:59:49 | train classes: other=928 target=420 
+14:59:49 | val classes:   other=204 target=95 
+14:59:49 | rep 3 | train: 914 val: 733 
+14:59:49 | train classes: other=567 target=347 
+14:59:49 | val classes:   other=565 target=168 
+14:59:49 | rep 1 | train: 1358 val: 289 
+14:59:49 | train classes: other=939 target=419 
+14:59:49 | val classes:   other=193 target=96 
+14:59:50 | rep 2 | train: 980 val: 667 
+14:59:50 | train classes: other=634 target=346 
+14:59:50 | val classes:   other=498 target=169 
+14:59:50 | rep 3 | train: 980 val: 667 
+14:59:50 | train classes: other=634 target=346 
+14:59:50 | val classes:   other=498 target=169 
+14:59:50 | rep 1 | train: 1358 val: 289 
+14:59:50 | train classes: other=939 target=419 
+14:59:50 | val classes:   other=193 target=96 
+14:59:50 | rep 2 | train: 1056 val: 591 
+14:59:50 | train classes: other=709 target=347 
+14:59:50 | val classes:   other=423 target=168 
+14:59:50 | rep 3 | train: 1206 val: 441 
+14:59:50 | train classes: other=786 target=420 
+14:59:50 | val classes:   other=346 target=95 
+14:59:50 | rep 1 | train: 1113 val: 534 
+14:59:50 | train classes: other=695 target=418 
+14:59:50 | val classes:   other=437 target=97 
+14:59:51 | rep 2 | train: 1113 val: 534 
+14:59:51 | train classes: other=695 target=418 
+14:59:51 | val classes:   other=437 target=97 
+14:59:51 | rep 3 | train: 1358 val: 289 
+14:59:51 | train classes: other=939 target=419 
+14:59:51 | val classes:   other=193 target=96 
+14:59:53 | rep 1 | train: 1073 val: 574 
+14:59:53 | train classes: other=725 target=348 
+14:59:53 | val classes:   other=407 target=167 
+14:59:53 | rep 2 | train: 1301 val: 346 
+14:59:53 | train classes: other=953 target=348 
+14:59:53 | val classes:   other=179 target=167 
+14:59:53 | rep 3 | train: 1301 val: 346 
+14:59:53 | train classes: other=953 target=348 
+14:59:53 | val classes:   other=179 target=167 
+14:59:56 | rep 1 | train: 1159 val: 488 
+14:59:56 | train classes: other=811 target=348 
+14:59:56 | val classes:   other=321 target=167 
+14:59:56 | rep 2 | train: 1149 val: 498 
+14:59:56 | train classes: other=800 target=349 
+14:59:56 | val classes:   other=332 target=166 
+14:59:56 | rep 3 | train: 1206 val: 441 
+14:59:56 | train classes: other=786 target=420 
+14:59:56 | val classes:   other=346 target=95 
+14:59:58 | rep 1 | train: 1134 val: 513 
+14:59:58 | train classes: other=786 target=348 
+14:59:58 | val classes:   other=346 target=167 
+14:59:58 | rep 2 | train: 1149 val: 498 
+14:59:58 | train classes: other=800 target=349 
+14:59:58 | val classes:   other=332 target=166 
+14:59:58 | rep 3 | train: 1286 val: 361 
+14:59:58 | train classes: other=939 target=347 
+14:59:58 | val classes:   other=193 target=168 
+14:59:59 | rep 1 | train: 1056 val: 591 
+14:59:59 | train classes: other=709 target=347 
+14:59:59 | val classes:   other=423 target=168 
+15:00:00 | rep 2 | train: 1333 val: 314 
+15:00:00 | train classes: other=914 target=419 
+15:00:00 | val classes:   other=218 target=96 
+15:00:00 | rep 3 | train: 914 val: 733 
+15:00:00 | train classes: other=567 target=347 
+15:00:00 | val classes:   other=565 target=168 
+15:00:02 | rep 1 | train: 1272 val: 375 
+15:00:02 | train classes: other=853 target=419 
+15:00:02 | val classes:   other=279 target=96 
+15:00:02 | rep 2 | train: 1066 val: 581 
+15:00:02 | train classes: other=720 target=346 
+15:00:02 | val classes:   other=412 target=169 
+15:00:02 | rep 3 | train: 1286 val: 361 
+15:00:02 | train classes: other=939 target=347 
+15:00:02 | val classes:   other=193 target=168 
+15:00:05 | rep 1 | train: 1358 val: 289 
+15:00:05 | train classes: other=939 target=419 
+15:00:05 | val classes:   other=193 target=96 
+15:00:05 | rep 2 | train: 1301 val: 346 
+15:00:05 | train classes: other=953 target=348 
+15:00:05 | val classes:   other=179 target=167 
+15:00:05 | rep 3 | train: 1215 val: 432 
+15:00:05 | train classes: other=867 target=348 
+15:00:05 | val classes:   other=265 target=167 
+15:00:06 | rep 1 | train: 1624 val: 227 
+15:00:06 | train classes: other=1310 target=314 
+15:00:06 | val classes:   other=143 target=84 
+15:00:07 | rep 2 | train: 1306 val: 545 
+15:00:07 | train classes: other=991 target=315 
+15:00:07 | val classes:   other=462 target=83 
+15:00:07 | rep 3 | train: 1494 val: 357 
+15:00:07 | train classes: other=1180 target=314 
+15:00:07 | val classes:   other=273 target=84 
+15:00:08 | rep 1 | train: 1143 val: 708 
+15:00:08 | train classes: other=835 target=308 
+15:00:08 | val classes:   other=618 target=90 
+15:00:08 | rep 2 | train: 1506 val: 345 
+15:00:08 | train classes: other=1237 target=269 
+15:00:08 | val classes:   other=216 target=129 
+15:00:09 | rep 3 | train: 1563 val: 288 
+15:00:09 | train classes: other=1261 target=302 
+15:00:09 | val classes:   other=192 target=96 
+15:00:10 | rep 1 | train: 1410 val: 441 
+15:00:10 | train classes: other=1107 target=303 
+15:00:10 | val classes:   other=346 target=95 
+15:00:10 | rep 2 | train: 1046 val: 805 
+15:00:10 | train classes: other=814 target=232 
+15:00:10 | val classes:   other=639 target=166 
+15:00:10 | rep 3 | train: 1410 val: 441 
+15:00:10 | train classes: other=1107 target=303 
+15:00:10 | val classes:   other=346 target=95 
+15:00:10 | rep 1 | train: 1471 val: 380 
+15:00:10 | train classes: other=1156 target=315 
+15:00:10 | val classes:   other=297 target=83 
+15:00:10 | rep 2 | train: 1143 val: 708 
+15:00:10 | train classes: other=835 target=308 
+15:00:10 | val classes:   other=618 target=90 
+15:00:10 | rep 3 | train: 1143 val: 708 
+15:00:10 | train classes: other=835 target=308 
+15:00:10 | val classes:   other=618 target=90 
+15:00:12 | rep 1 | train: 1245 val: 606 
+15:00:12 | train classes: other=942 target=303 
+15:00:12 | val classes:   other=511 target=95 
+15:00:12 | rep 2 | train: 1471 val: 380 
+15:00:12 | train classes: other=1156 target=315 
+15:00:12 | val classes:   other=297 target=83 
+15:00:13 | rep 3 | train: 1353 val: 498 
+15:00:13 | train classes: other=1083 target=270 
+15:00:13 | val classes:   other=370 target=128 
+15:00:15 | rep 1 | train: 1364 val: 487 
+15:00:15 | train classes: other=1133 target=231 
+15:00:15 | val classes:   other=320 target=167 
+15:00:15 | rep 2 | train: 1410 val: 441 
+15:00:15 | train classes: other=1107 target=303 
+15:00:15 | val classes:   other=346 target=95 
+15:00:15 | rep 3 | train: 1234 val: 617 
+15:00:15 | train classes: other=1003 target=231 
+15:00:15 | val classes:   other=450 target=167 
+15:00:17 | rep 1 | train: 1507 val: 344 
+15:00:17 | train classes: other=1128 target=379 
+15:00:17 | val classes:   other=325 target=19 
+15:00:17 | rep 2 | train: 1376 val: 475 
+15:00:17 | train classes: other=1107 target=269 
+15:00:17 | val classes:   other=346 target=129 
+15:00:18 | rep 3 | train: 1450 val: 401 
+15:00:18 | train classes: other=1104 target=346 
+15:00:18 | val classes:   other=349 target=52 
+15:00:20 | rep 1 | train: 1188 val: 663 
+15:00:20 | train classes: other=918 target=270 
+15:00:20 | val classes:   other=535 target=128 
+15:00:20 | rep 2 | train: 1234 val: 617 
+15:00:20 | train classes: other=1003 target=231 
+15:00:20 | val classes:   other=450 target=167 
+15:00:20 | rep 3 | train: 1670 val: 181 
+15:00:20 | train classes: other=1284 target=386 
+15:00:20 | val classes:   other=169 target=12 
+15:00:21 | rep 1 | train: 1552 val: 299 
+15:00:21 | train classes: other=1211 target=341 
+15:00:21 | val classes:   other=242 target=57 
+15:00:21 | rep 2 | train: 1494 val: 357 
+15:00:21 | train classes: other=1180 target=314 
+15:00:21 | val classes:   other=273 target=84 
+15:00:21 | rep 3 | train: 1461 val: 390 
+15:00:21 | train classes: other=1154 target=307 
+15:00:21 | val classes:   other=299 target=91 
+15:00:23 | rep 1 | train: 1568 val: 283 
+15:00:23 | train classes: other=1177 target=391 
+15:00:23 | val classes:   other=276 target=7 
+15:00:23 | rep 2 | train: 1461 val: 390 
+15:00:23 | train classes: other=1154 target=307 
+15:00:23 | val classes:   other=299 target=91 
+15:00:24 | rep 3 | train: 1143 val: 708 
+15:00:24 | train classes: other=835 target=308 
+15:00:24 | val classes:   other=618 target=90 
+15:00:25 | rep 1 | train: 1805 val: 475 
+15:00:25 | train classes: other=1379 target=426 
+15:00:25 | val classes:   other=346 target=129 
+15:00:25 | rep 2 | train: 1803 val: 477 
+15:00:25 | train classes: other=1339 target=464 
+15:00:25 | val classes:   other=386 target=91 
+15:00:25 | rep 3 | train: 1689 val: 591 
+15:00:25 | train classes: other=1264 target=425 
+15:00:25 | val classes:   other=461 target=130 
+15:00:26 | rep 1 | train: 1805 val: 475 
+15:00:26 | train classes: other=1417 target=388 
+15:00:26 | val classes:   other=308 target=167 
+15:00:26 | rep 2 | train: 1572 val: 708 
+15:00:26 | train classes: other=1107 target=465 
+15:00:26 | val classes:   other=618 target=90 
+15:00:27 | rep 3 | train: 1848 val: 432 
+15:00:27 | train classes: other=1460 target=388 
+15:00:27 | val classes:   other=265 target=167 
+15:00:27 | rep 1 | train: 2042 val: 238 
+15:00:27 | train classes: other=1532 target=510 
+15:00:27 | val classes:   other=193 target=45 
+15:00:28 | rep 2 | train: 1689 val: 591 
+15:00:28 | train classes: other=1264 target=425 
+15:00:28 | val classes:   other=461 target=130 
+15:00:29 | rep 3 | train: 1923 val: 357 
+15:00:29 | train classes: other=1452 target=471 
+15:00:29 | val classes:   other=273 target=84 
+15:00:29 | rep 1 | train: 1807 val: 473 
+15:00:29 | train classes: other=1337 target=470 
+15:00:29 | val classes:   other=388 target=85 
+15:00:30 | rep 2 | train: 1675 val: 605 
+15:00:30 | train classes: other=1289 target=386 
+15:00:30 | val classes:   other=436 target=169 
+15:00:31 | rep 3 | train: 1807 val: 473 
+15:00:31 | train classes: other=1337 target=470 
+15:00:31 | val classes:   other=388 target=85 
+15:00:34 | rep 1 | train: 1879 val: 401 
+15:00:34 | train classes: other=1414 target=465 
+15:00:34 | val classes:   other=311 target=90 
+15:00:35 | rep 2 | train: 1570 val: 710 
+15:00:35 | train classes: other=1184 target=386 
+15:00:35 | val classes:   other=541 target=169 
+15:00:35 | rep 3 | train: 1879 val: 401 
+15:00:35 | train classes: other=1376 target=503 
+15:00:35 | val classes:   other=349 target=52 
+15:00:37 | rep 1 | train: 1541 val: 739 
+15:00:37 | train classes: other=1153 target=388 
+15:00:37 | val classes:   other=572 target=167 
+15:00:37 | rep 2 | train: 1735 val: 545 
+15:00:37 | train classes: other=1263 target=472 
+15:00:37 | val classes:   other=462 target=83 
+15:00:37 | rep 3 | train: 1924 val: 356 
+15:00:37 | train classes: other=1497 target=427 
+15:00:37 | val classes:   other=228 target=128 
+15:00:39 | rep 1 | train: 1910 val: 370 
+15:00:39 | train classes: other=1522 target=388 
+15:00:39 | val classes:   other=203 target=167 
+15:00:39 | rep 2 | train: 1613 val: 667 
+15:00:39 | train classes: other=1227 target=386 
+15:00:39 | val classes:   other=498 target=169 
+15:00:39 | rep 3 | train: 1997 val: 283 
+15:00:39 | train classes: other=1449 target=548 
+15:00:39 | val classes:   other=276 target=7 
+15:00:41 | rep 1 | train: 1644 val: 636 
+15:00:41 | train classes: other=1181 target=463 
+15:00:41 | val classes:   other=544 target=92 
+15:00:42 | rep 2 | train: 1865 val: 415 
+15:00:42 | train classes: other=1401 target=464 
+15:00:42 | val classes:   other=324 target=91 
+15:00:42 | rep 3 | train: 1689 val: 591 
+15:00:42 | train classes: other=1302 target=387 
+15:00:42 | val classes:   other=423 target=168 
+15:00:44 | rep 1 | train: 1735 val: 545 
+15:00:44 | train classes: other=1263 target=472 
+15:00:44 | val classes:   other=462 target=83 
+15:00:44 | rep 2 | train: 1924 val: 356 
+15:00:44 | train classes: other=1497 target=427 
+15:00:44 | val classes:   other=228 target=128 
+15:00:45 | rep 3 | train: 1689 val: 591 
+15:00:45 | train classes: other=1264 target=425 
+15:00:45 | val classes:   other=461 target=130 
+15:00:48 | rep 1 | train: 1910 val: 370 
+15:00:48 | train classes: other=1522 target=388 
+15:00:48 | val classes:   other=203 target=167 
+15:00:48 | rep 2 | train: 1570 val: 710 
+15:00:48 | train classes: other=1184 target=386 
+15:00:48 | val classes:   other=541 target=169 
+15:00:49 | rep 3 | train: 1617 val: 663 
+15:00:49 | train classes: other=1190 target=427 
+15:00:49 | val classes:   other=535 target=128 
+15:59:51 | rep 1 | train: 5943 val: 634 
+15:59:51 | train classes: other=5772 target=171 
+15:59:51 | val classes:   other=581 target=53 
+15:59:52 | rep 2 | train: 5078 val: 1499 
+15:59:52 | train classes: other=4896 target=182 
+15:59:52 | val classes:   other=1457 target=42 
+15:59:52 | rep 3 | train: 4901 val: 1676 
+15:59:52 | train classes: other=4696 target=205 
+15:59:52 | val classes:   other=1657 target=19 
+15:59:52 | rep 1 | train: 5127 val: 1450 
+15:59:52 | train classes: other=4917 target=210 
+15:59:52 | val classes:   other=1436 target=14 
+15:59:54 | rep 2 | train: 4967 val: 1610 
+15:59:54 | train classes: other=4787 target=180 
+15:59:54 | val classes:   other=1566 target=44 
+15:59:55 | rep 3 | train: 5288 val: 1289 
+15:59:55 | train classes: other=5099 target=189 
+15:59:55 | val classes:   other=1254 target=35 
+15:59:57 | rep 1 | train: 4552 val: 2025 
+15:59:57 | train classes: other=4359 target=193 
+15:59:57 | val classes:   other=1994 target=31 
+15:59:58 | rep 2 | train: 4239 val: 2338 
+15:59:58 | train classes: other=4096 target=143 
+15:59:58 | val classes:   other=2257 target=81 
+15:59:58 | rep 3 | train: 5864 val: 713 
+15:59:58 | train classes: other=5668 target=196 
+15:59:58 | val classes:   other=685 target=28 
+15:59:59 | rep 1 | train: 4762 val: 1815 
+15:59:59 | train classes: other=4612 target=150 
+15:59:59 | val classes:   other=1741 target=74 
+16:00:00 | rep 2 | train: 5175 val: 1402 
+16:00:00 | train classes: other=4993 target=182 
+16:00:00 | val classes:   other=1360 target=42 
+16:00:00 | rep 3 | train: 5281 val: 1296 
+16:00:00 | train classes: other=5107 target=174 
+16:00:00 | val classes:   other=1246 target=50 
+16:00:01 | rep 1 | train: 5786 val: 791 
+16:00:01 | train classes: other=5604 target=182 
+16:00:01 | val classes:   other=749 target=42 
+16:00:01 | rep 2 | train: 5617 val: 960 
+16:00:01 | train classes: other=5470 target=147 
+16:00:01 | val classes:   other=883 target=77 
+16:00:01 | rep 3 | train: 4645 val: 1932 
+16:00:01 | train classes: other=4471 target=174 
+16:00:01 | val classes:   other=1882 target=50 
+16:00:03 | rep 1 | train: 5117 val: 1460 
+16:00:03 | train classes: other=4944 target=173 
+16:00:03 | val classes:   other=1409 target=51 
+16:00:04 | rep 2 | train: 5665 val: 912 
+16:00:04 | train classes: other=5467 target=198 
+16:00:04 | val classes:   other=886 target=26 
+16:00:05 | rep 3 | train: 5227 val: 1350 
+16:00:05 | train classes: other=5068 target=159 
+16:00:05 | val classes:   other=1285 target=65 
+16:00:07 | rep 1 | train: 4677 val: 1900 
+16:00:07 | train classes: other=4553 target=124 
+16:00:07 | val classes:   other=1800 target=100 
+16:00:07 | rep 2 | train: 4721 val: 1856 
+16:00:07 | train classes: other=4569 target=152 
+16:00:07 | val classes:   other=1784 target=72 
+16:00:08 | rep 3 | train: 4713 val: 1864 
+16:00:08 | train classes: other=4534 target=179 
+16:00:08 | val classes:   other=1819 target=45 
+16:00:10 | rep 1 | train: 3790 val: 2787 
+16:00:10 | train classes: other=3620 target=170 
+16:00:10 | val classes:   other=2733 target=54 
+16:00:10 | rep 2 | train: 4893 val: 1684 
+16:00:10 | train classes: other=4755 target=138 
+16:00:10 | val classes:   other=1598 target=86 
+16:00:10 | rep 3 | train: 4402 val: 2175 
+16:00:10 | train classes: other=4212 target=190 
+16:00:10 | val classes:   other=2141 target=34 
+16:00:12 | rep 1 | train: 5792 val: 785 
+16:00:12 | train classes: other=5590 target=202 
+16:00:12 | val classes:   other=763 target=22 
+16:00:13 | rep 2 | train: 5425 val: 1152 
+16:00:13 | train classes: other=5241 target=184 
+16:00:13 | val classes:   other=1112 target=40 
+16:00:14 | rep 3 | train: 5290 val: 1287 
+16:00:14 | train classes: other=5116 target=174 
+16:00:14 | val classes:   other=1237 target=50 
+16:00:16 | rep 1 | train: 5667 val: 910 
+16:00:16 | train classes: other=5497 target=170 
+16:00:16 | val classes:   other=856 target=54 
+16:00:16 | rep 2 | train: 4893 val: 1684 
+16:00:16 | train classes: other=4750 target=143 
+16:00:16 | val classes:   other=1603 target=81 
+16:00:16 | rep 3 | train: 4485 val: 2092 
+16:00:16 | train classes: other=4350 target=135 
+16:00:16 | val classes:   other=2003 target=89 
+16:00:19 | rep 1 | train: 3892 val: 1538 
+16:00:19 | train classes: other=3608 target=284 
+16:00:19 | val classes:   other=1529 target=9 
+16:00:19 | rep 2 | train: 4488 val: 942 
+16:00:19 | train classes: other=4289 target=199 
+16:00:19 | val classes:   other=848 target=94 
+16:00:19 | rep 3 | train: 4877 val: 553 
+16:00:19 | train classes: other=4626 target=251 
+16:00:19 | val classes:   other=511 target=42 
+16:00:20 | rep 1 | train: 4524 val: 906 
+16:00:20 | train classes: other=4247 target=277 
+16:00:20 | val classes:   other=890 target=16 
+16:00:21 | rep 2 | train: 4838 val: 592 
+16:00:21 | train classes: other=4596 target=242 
+16:00:21 | val classes:   other=541 target=51 
+16:00:21 | rep 3 | train: 4966 val: 464 
+16:00:21 | train classes: other=4715 target=251 
+16:00:21 | val classes:   other=422 target=42 
+16:00:22 | rep 1 | train: 4250 val: 1180 
+16:00:22 | train classes: other=4007 target=243 
+16:00:22 | val classes:   other=1130 target=50 
+16:00:23 | rep 2 | train: 4491 val: 939 
+16:00:23 | train classes: other=4236 target=255 
+16:00:23 | val classes:   other=901 target=38 
+16:00:23 | rep 3 | train: 3880 val: 1550 
+16:00:23 | train classes: other=3716 target=164 
+16:00:23 | val classes:   other=1421 target=129 
+16:00:23 | rep 1 | train: 4564 val: 866 
+16:00:23 | train classes: other=4298 target=266 
+16:00:23 | val classes:   other=839 target=27 
+16:00:25 | rep 2 | train: 4579 val: 851 
+16:00:25 | train classes: other=4340 target=239 
+16:00:25 | val classes:   other=797 target=54 
+16:00:27 | rep 3 | train: 4126 val: 1304 
+16:00:27 | train classes: other=3954 target=172 
+16:00:27 | val classes:   other=1183 target=121 
+16:00:30 | rep 1 | train: 4636 val: 794 
+16:00:30 | train classes: other=4397 target=239 
+16:00:30 | val classes:   other=740 target=54 
+16:00:30 | rep 2 | train: 4749 val: 681 
+16:00:30 | train classes: other=4509 target=240 
+16:00:30 | val classes:   other=628 target=53 
+16:00:30 | rep 3 | train: 4224 val: 1206 
+16:00:30 | train classes: other=3992 target=232 
+16:00:30 | val classes:   other=1145 target=61 
+16:00:32 | rep 1 | train: 4304 val: 1126 
+16:00:32 | train classes: other=4108 target=196 
+16:00:32 | val classes:   other=1029 target=97 
+16:00:32 | rep 2 | train: 4229 val: 1201 
+16:00:32 | train classes: other=4010 target=219 
+16:00:32 | val classes:   other=1127 target=74 
+16:00:32 | rep 3 | train: 3671 val: 1759 
+16:00:32 | train classes: other=3430 target=241 
+16:00:32 | val classes:   other=1707 target=52 
+16:00:34 | rep 1 | train: 4139 val: 1291 
+16:00:34 | train classes: other=3928 target=211 
+16:00:34 | val classes:   other=1209 target=82 
+16:00:35 | rep 2 | train: 4461 val: 969 
+16:00:35 | train classes: other=4224 target=237 
+16:00:35 | val classes:   other=913 target=56 
+16:00:36 | rep 3 | train: 4123 val: 1307 
+16:00:36 | train classes: other=3846 target=277 
+16:00:36 | val classes:   other=1291 target=16 
+16:00:38 | rep 1 | train: 4742 val: 688 
+16:00:38 | train classes: other=4501 target=241 
+16:00:38 | val classes:   other=636 target=52 
+16:00:38 | rep 2 | train: 3831 val: 1599 
+16:00:38 | train classes: other=3553 target=278 
+16:00:38 | val classes:   other=1584 target=15 
+16:00:39 | rep 3 | train: 4376 val: 1054 
+16:00:39 | train classes: other=4139 target=237 
+16:00:39 | val classes:   other=998 target=56 
+16:00:41 | rep 1 | train: 4432 val: 998 
+16:00:41 | train classes: other=4220 target=212 
+16:00:41 | val classes:   other=917 target=81 
+16:00:43 | rep 2 | train: 4818 val: 612 
+16:00:43 | train classes: other=4563 target=255 
+16:00:43 | val classes:   other=574 target=38 
+16:00:44 | rep 3 | train: 4176 val: 1254 
+16:00:44 | train classes: other=3933 target=243 
+16:00:44 | val classes:   other=1204 target=50 
+16:00:46 | rep 1 | train: 4219 val: 1211 
+16:00:46 | train classes: other=3989 target=230 
+16:00:46 | val classes:   other=1148 target=63 
+16:00:46 | rep 2 | train: 4489 val: 941 
+16:00:46 | train classes: other=4269 target=220 
+16:00:46 | val classes:   other=868 target=73 
+16:00:46 | rep 3 | train: 4489 val: 941 
+16:00:46 | train classes: other=4309 target=180 
+16:00:46 | val classes:   other=828 target=113 
+16:00:47 | rep 1 | train: 5397 val: 2305 
+16:00:47 | train classes: other=5178 target=219 
+16:00:47 | val classes:   other=2180 target=125 
+16:00:48 | rep 2 | train: 6634 val: 1068 
+16:00:48 | train classes: other=6333 target=301 
+16:00:48 | val classes:   other=1025 target=43 
+16:00:48 | rep 3 | train: 6408 val: 1294 
+16:00:48 | train classes: other=6118 target=290 
+16:00:48 | val classes:   other=1240 target=54 
+16:00:49 | rep 1 | train: 4975 val: 2727 
+16:00:49 | train classes: other=4710 target=265 
+16:00:49 | val classes:   other=2648 target=79 
+16:00:51 | rep 2 | train: 5890 val: 1812 
+16:00:51 | train classes: other=5622 target=268 
+16:00:51 | val classes:   other=1736 target=76 
+16:00:52 | rep 3 | train: 5753 val: 1949 
+16:00:52 | train classes: other=5438 target=315 
+16:00:52 | val classes:   other=1920 target=29 
+16:00:54 | rep 1 | train: 6265 val: 1437 
+16:00:54 | train classes: other=5992 target=273 
+16:00:54 | val classes:   other=1366 target=71 
+16:00:56 | rep 2 | train: 5817 val: 1885 
+16:00:56 | train classes: other=5513 target=304 
+16:00:56 | val classes:   other=1845 target=40 
+16:00:58 | rep 3 | train: 5569 val: 2133 
+16:00:58 | train classes: other=5251 target=318 
+16:00:58 | val classes:   other=2107 target=26 
+16:00:59 | rep 1 | train: 6282 val: 1420 
+16:00:59 | train classes: other=5984 target=298 
+16:00:59 | val classes:   other=1374 target=46 
+16:00:59 | rep 2 | train: 6654 val: 1048 
+16:00:59 | train classes: other=6326 target=328 
+16:00:59 | val classes:   other=1032 target=16 
+16:01:00 | rep 3 | train: 5346 val: 2356 
+16:01:00 | train classes: other=5137 target=209 
+16:01:00 | val classes:   other=2221 target=135 
+16:01:01 | rep 1 | train: 5952 val: 1750 
+16:01:01 | train classes: other=5628 target=324 
+16:01:01 | val classes:   other=1730 target=20 
+16:01:02 | rep 2 | train: 6630 val: 1072 
+16:01:02 | train classes: other=6347 target=283 
+16:01:02 | val classes:   other=1011 target=61 
+16:01:02 | rep 3 | train: 6471 val: 1231 
+16:01:02 | train classes: other=6246 target=225 
+16:01:02 | val classes:   other=1112 target=119 
+16:01:04 | rep 1 | train: 5398 val: 2304 
+16:01:04 | train classes: other=5103 target=295 
+16:01:04 | val classes:   other=2255 target=49 
+16:01:04 | rep 2 | train: 6853 val: 849 
+16:01:04 | train classes: other=6609 target=244 
+16:01:04 | val classes:   other=749 target=100 
+16:01:04 | rep 3 | train: 6079 val: 1623 
+16:01:04 | train classes: other=5769 target=310 
+16:01:04 | val classes:   other=1589 target=34 
+16:01:06 | rep 1 | train: 5668 val: 2034 
+16:01:06 | train classes: other=5405 target=263 
+16:01:06 | val classes:   other=1953 target=81 
+16:01:06 | rep 2 | train: 6318 val: 1384 
+16:01:06 | train classes: other=6028 target=290 
+16:01:06 | val classes:   other=1330 target=54 
+16:01:06 | rep 3 | train: 5728 val: 1974 
+16:01:06 | train classes: other=5446 target=282 
+16:01:06 | val classes:   other=1912 target=62 
+16:01:07 | rep 1 | train: 6526 val: 1176 
+16:01:07 | train classes: other=6276 target=250 
+16:01:07 | val classes:   other=1082 target=94 
+16:01:08 | rep 2 | train: 6716 val: 986 
+16:01:08 | train classes: other=6427 target=289 
+16:01:08 | val classes:   other=931 target=55 
+16:01:09 | rep 3 | train: 6493 val: 1209 
+16:01:09 | train classes: other=6223 target=270 
+16:01:09 | val classes:   other=1135 target=74 
+16:01:10 | rep 1 | train: 6639 val: 1063 
+16:01:10 | train classes: other=6374 target=265 
+16:01:10 | val classes:   other=984 target=79 
+16:01:12 | rep 2 | train: 6518 val: 1184 
+16:01:12 | train classes: other=6227 target=291 
+16:01:12 | val classes:   other=1131 target=53 
+16:01:13 | rep 3 | train: 5411 val: 2291 
+16:01:13 | train classes: other=5127 target=284 
+16:01:13 | val classes:   other=2231 target=60 
+16:01:15 | rep 1 | train: 6426 val: 1276 
+16:01:15 | train classes: other=6123 target=303 
+16:01:15 | val classes:   other=1235 target=41 
+16:01:16 | rep 2 | train: 6159 val: 1543 
+16:01:16 | train classes: other=5963 target=196 
+16:01:16 | val classes:   other=1395 target=148 
+16:01:17 | rep 3 | train: 6424 val: 1278 
+16:01:17 | train classes: other=6149 target=275 
+16:01:17 | val classes:   other=1209 target=69 
+16:02:41 | rep 1 | train: 5102 val: 1475 
+16:02:41 | train classes: other=4961 target=141 
+16:02:41 | val classes:   other=1392 target=83 
+16:02:43 | rep 2 | train: 5162 val: 1415 
+16:02:43 | train classes: other=4995 target=167 
+16:02:43 | val classes:   other=1358 target=57 
+16:02:44 | rep 3 | train: 5641 val: 936 
+16:02:44 | train classes: other=5455 target=186 
+16:02:44 | val classes:   other=898 target=38 
+16:02:46 | rep 1 | train: 5821 val: 756 
+16:02:46 | train classes: other=5646 target=175 
+16:02:46 | val classes:   other=707 target=49 
+16:02:47 | rep 2 | train: 4702 val: 1875 
+16:02:47 | train classes: other=4504 target=198 
+16:02:47 | val classes:   other=1849 target=26 
+16:02:47 | rep 3 | train: 5603 val: 974 
+16:02:47 | train classes: other=5412 target=191 
+16:02:47 | val classes:   other=941 target=33 
+16:02:48 | rep 1 | train: 4790 val: 1787 
+16:02:48 | train classes: other=4616 target=174 
+16:02:48 | val classes:   other=1737 target=50 
+16:02:49 | rep 2 | train: 5863 val: 714 
+16:02:49 | train classes: other=5672 target=191 
+16:02:49 | val classes:   other=681 target=33 
+16:02:50 | rep 3 | train: 5308 val: 1269 
+16:02:50 | train classes: other=5128 target=180 
+16:02:50 | val classes:   other=1225 target=44 
+16:02:51 | rep 1 | train: 5036 val: 1541 
+16:02:51 | train classes: other=4870 target=166 
+16:02:51 | val classes:   other=1483 target=58 
+16:02:51 | rep 2 | train: 5033 val: 1544 
+16:02:51 | train classes: other=4827 target=206 
+16:02:51 | val classes:   other=1526 target=18 
+16:02:52 | rep 3 | train: 5706 val: 871 
+16:02:52 | train classes: other=5492 target=214 
+16:02:52 | val classes:   other=861 target=10 
+16:02:54 | rep 1 | train: 5443 val: 1134 
+16:02:54 | train classes: other=5260 target=183 
+16:02:54 | val classes:   other=1093 target=41 
+16:02:54 | rep 2 | train: 5264 val: 1313 
+16:02:54 | train classes: other=5083 target=181 
+16:02:54 | val classes:   other=1270 target=43 
+16:02:55 | rep 3 | train: 5828 val: 749 
+16:02:55 | train classes: other=5630 target=198 
+16:02:55 | val classes:   other=723 target=26 
+16:02:57 | rep 1 | train: 4442 val: 2135 
+16:02:57 | train classes: other=4268 target=174 
+16:02:57 | val classes:   other=2085 target=50 
+16:02:58 | rep 2 | train: 5034 val: 1543 
+16:02:58 | train classes: other=4828 target=206 
+16:02:58 | val classes:   other=1525 target=18 
+16:02:58 | rep 3 | train: 5208 val: 1369 
+16:02:58 | train classes: other=5046 target=162 
+16:02:58 | val classes:   other=1307 target=62 
+16:03:00 | rep 1 | train: 5155 val: 1422 
+16:03:00 | train classes: other=5029 target=126 
+16:03:00 | val classes:   other=1324 target=98 
+16:03:01 | rep 2 | train: 5260 val: 1317 
+16:03:01 | train classes: other=5115 target=145 
+16:03:01 | val classes:   other=1238 target=79 
+16:03:01 | rep 3 | train: 4806 val: 1771 
+16:03:01 | train classes: other=4621 target=185 
+16:03:01 | val classes:   other=1732 target=39 
+16:03:03 | rep 1 | train: 5154 val: 1423 
+16:03:03 | train classes: other=5006 target=148 
+16:03:03 | val classes:   other=1347 target=76 
+16:03:04 | rep 2 | train: 5401 val: 1176 
+16:03:04 | train classes: other=5253 target=148 
+16:03:04 | val classes:   other=1100 target=76 
+16:03:05 | rep 3 | train: 4920 val: 1657 
+16:03:05 | train classes: other=4748 target=172 
+16:03:05 | val classes:   other=1605 target=52 
+16:03:08 | rep 1 | train: 5087 val: 1490 
+16:03:08 | train classes: other=4937 target=150 
+16:03:08 | val classes:   other=1416 target=74 
+16:03:09 | rep 2 | train: 4911 val: 1666 
+16:03:09 | train classes: other=4713 target=198 
+16:03:09 | val classes:   other=1640 target=26 
+16:03:10 | rep 3 | train: 4739 val: 1838 
+16:03:10 | train classes: other=4563 target=176 
+16:03:10 | val classes:   other=1790 target=48 
+16:03:13 | rep 1 | train: 4597 val: 1980 
+16:03:13 | train classes: other=4423 target=174 
+16:03:13 | val classes:   other=1930 target=50 
+16:03:14 | rep 2 | train: 5479 val: 1098 
+16:03:14 | train classes: other=5323 target=156 
+16:03:14 | val classes:   other=1030 target=68 
+16:03:15 | rep 3 | train: 4903 val: 1674 
+16:03:15 | train classes: other=4695 target=208 
+16:03:15 | val classes:   other=1658 target=16 
+16:03:16 | rep 1 | train: 4178 val: 1252 
+16:03:16 | train classes: other=3937 target=241 
+16:03:16 | val classes:   other=1200 target=52 
+16:03:17 | rep 2 | train: 3959 val: 1471 
+16:03:17 | train classes: other=3744 target=215 
+16:03:17 | val classes:   other=1393 target=78 
+16:03:17 | rep 3 | train: 4644 val: 786 
+16:03:17 | train classes: other=4459 target=185 
+16:03:17 | val classes:   other=678 target=108 
+16:03:18 | rep 1 | train: 4507 val: 923 
+16:03:18 | train classes: other=4303 target=204 
+16:03:18 | val classes:   other=834 target=89 
+16:03:19 | rep 2 | train: 4173 val: 1257 
+16:03:19 | train classes: other=3961 target=212 
+16:03:19 | val classes:   other=1176 target=81 
+16:03:20 | rep 3 | train: 4238 val: 1192 
+16:03:20 | train classes: other=4003 target=235 
+16:03:20 | val classes:   other=1134 target=58 
+16:03:21 | rep 1 | train: 4324 val: 1106 
+16:03:21 | train classes: other=4041 target=283 
+16:03:21 | val classes:   other=1096 target=10 
+16:03:22 | rep 2 | train: 4056 val: 1374 
+16:03:22 | train classes: other=3868 target=188 
+16:03:22 | val classes:   other=1269 target=105 
+16:03:24 | rep 3 | train: 4246 val: 1184 
+16:03:24 | train classes: other=4022 target=224 
+16:03:24 | val classes:   other=1115 target=69 
+16:03:25 | rep 1 | train: 4557 val: 873 
+16:03:25 | train classes: other=4282 target=275 
+16:03:25 | val classes:   other=855 target=18 
+16:03:26 | rep 2 | train: 4645 val: 785 
+16:03:26 | train classes: other=4442 target=203 
+16:03:26 | val classes:   other=695 target=90 
+16:03:26 | rep 3 | train: 4452 val: 978 
+16:03:26 | train classes: other=4200 target=252 
+16:03:26 | val classes:   other=937 target=41 
+16:03:27 | rep 1 | train: 4342 val: 1088 
+16:03:27 | train classes: other=4158 target=184 
+16:03:27 | val classes:   other=979 target=109 
+16:03:29 | rep 2 | train: 4839 val: 591 
+16:03:29 | train classes: other=4574 target=265 
+16:03:29 | val classes:   other=563 target=28 
+16:03:30 | rep 3 | train: 3972 val: 1458 
+16:03:30 | train classes: other=3809 target=163 
+16:03:30 | val classes:   other=1328 target=130 
+16:03:33 | rep 1 | train: 3801 val: 1629 
+16:03:33 | train classes: other=3547 target=254 
+16:03:33 | val classes:   other=1590 target=39 
+16:03:35 | rep 2 | train: 4631 val: 799 
+16:03:35 | train classes: other=4454 target=177 
+16:03:35 | val classes:   other=683 target=116 
+16:03:37 | rep 3 | train: 4094 val: 1336 
+16:03:37 | train classes: other=3869 target=225 
+16:03:37 | val classes:   other=1268 target=68 
+16:03:40 | rep 1 | train: 4102 val: 1328 
+16:03:40 | train classes: other=3889 target=213 
+16:03:40 | val classes:   other=1248 target=80 
+16:03:42 | rep 2 | train: 4443 val: 987 
+16:03:42 | train classes: other=4252 target=191 
+16:03:42 | val classes:   other=885 target=102 
+16:03:43 | rep 3 | train: 4611 val: 819 
+16:03:43 | train classes: other=4347 target=264 
+16:03:43 | val classes:   other=790 target=29 
+16:03:46 | rep 1 | train: 4835 val: 595 
+16:03:46 | train classes: other=4597 target=238 
+16:03:46 | val classes:   other=540 target=55 
+16:03:46 | rep 2 | train: 4688 val: 742 
+16:03:46 | train classes: other=4432 target=256 
+16:03:46 | val classes:   other=705 target=37 
+16:03:46 | rep 3 | train: 3880 val: 1550 
+16:03:46 | train classes: other=3716 target=164 
+16:03:46 | val classes:   other=1421 target=129 
+16:03:47 | rep 1 | train: 3975 val: 1455 
+16:03:47 | train classes: other=3705 target=270 
+16:03:47 | val classes:   other=1432 target=23 
+16:03:47 | rep 2 | train: 4560 val: 870 
+16:03:47 | train classes: other=4338 target=222 
+16:03:47 | val classes:   other=799 target=71 
+16:03:48 | rep 3 | train: 4216 val: 1214 
+16:03:48 | train classes: other=3993 target=223 
+16:03:48 | val classes:   other=1144 target=70 
+16:03:50 | rep 1 | train: 4038 val: 1392 
+16:03:50 | train classes: other=3837 target=201 
+16:03:50 | val classes:   other=1300 target=92 
+16:03:51 | rep 2 | train: 4347 val: 1083 
+16:03:51 | train classes: other=4160 target=187 
+16:03:51 | val classes:   other=977 target=106 
+16:03:53 | rep 3 | train: 4116 val: 1314 
+16:03:53 | train classes: other=3903 target=213 
+16:03:53 | val classes:   other=1234 target=80 
+16:03:56 | rep 1 | train: 6301 val: 1401 
+16:03:56 | train classes: other=6034 target=267 
+16:03:56 | val classes:   other=1324 target=77 
+16:03:58 | rep 2 | train: 5682 val: 2020 
+16:03:58 | train classes: other=5377 target=305 
+16:03:58 | val classes:   other=1981 target=39 
+16:04:00 | rep 3 | train: 6319 val: 1383 
+16:04:00 | train classes: other=6059 target=260 
+16:04:00 | val classes:   other=1299 target=84 
+16:04:02 | rep 1 | train: 5861 val: 1841 
+16:04:02 | train classes: other=5600 target=261 
+16:04:02 | val classes:   other=1758 target=83 
+16:04:02 | rep 2 | train: 6509 val: 1193 
+16:04:02 | train classes: other=6237 target=272 
+16:04:02 | val classes:   other=1121 target=72 
+16:04:02 | rep 3 | train: 6355 val: 1347 
+16:04:02 | train classes: other=6102 target=253 
+16:04:02 | val classes:   other=1256 target=91 
+16:04:03 | rep 1 | train: 7048 val: 654 
+16:04:03 | train classes: other=6747 target=301 
+16:04:03 | val classes:   other=611 target=43 
+16:04:04 | rep 2 | train: 6677 val: 1025 
+16:04:04 | train classes: other=6368 target=309 
+16:04:04 | val classes:   other=990 target=35 
+16:04:05 | rep 3 | train: 5163 val: 2539 
+16:04:05 | train classes: other=4865 target=298 
+16:04:05 | val classes:   other=2493 target=46 
+16:04:06 | rep 1 | train: 6618 val: 1084 
+16:04:06 | train classes: other=6309 target=309 
+16:04:06 | val classes:   other=1049 target=35 
+16:04:07 | rep 2 | train: 6122 val: 1580 
+16:04:07 | train classes: other=5845 target=277 
+16:04:07 | val classes:   other=1513 target=67 
+16:04:08 | rep 3 | train: 6551 val: 1151 
+16:04:08 | train classes: other=6252 target=299 
+16:04:08 | val classes:   other=1106 target=45 
+16:04:09 | rep 1 | train: 5447 val: 2255 
+16:04:09 | train classes: other=5179 target=268 
+16:04:09 | val classes:   other=2179 target=76 
+16:04:10 | rep 2 | train: 5949 val: 1753 
+16:04:10 | train classes: other=5641 target=308 
+16:04:10 | val classes:   other=1717 target=36 
+16:04:10 | rep 3 | train: 5928 val: 1774 
+16:04:10 | train classes: other=5622 target=306 
+16:04:10 | val classes:   other=1736 target=38 
+16:04:12 | rep 1 | train: 5659 val: 2043 
+16:04:12 | train classes: other=5412 target=247 
+16:04:12 | val classes:   other=1946 target=97 
+16:04:12 | rep 2 | train: 6918 val: 784 
+16:04:12 | train classes: other=6603 target=315 
+16:04:12 | val classes:   other=755 target=29 
+16:04:12 | rep 3 | train: 5779 val: 1923 
+16:04:12 | train classes: other=5490 target=289 
+16:04:12 | val classes:   other=1868 target=55 
+16:04:14 | rep 1 | train: 5428 val: 2274 
+16:04:14 | train classes: other=5218 target=210 
+16:04:14 | val classes:   other=2140 target=134 
+16:04:14 | rep 2 | train: 7012 val: 690 
+16:04:14 | train classes: other=6724 target=288 
+16:04:14 | val classes:   other=634 target=56 
+16:04:14 | rep 3 | train: 6354 val: 1348 
+16:04:14 | train classes: other=6109 target=245 
+16:04:14 | val classes:   other=1249 target=99 
+16:04:15 | rep 1 | train: 6274 val: 1428 
+16:04:15 | train classes: other=5956 target=318 
+16:04:15 | val classes:   other=1402 target=26 
+16:04:15 | rep 2 | train: 6726 val: 976 
+16:04:15 | train classes: other=6413 target=313 
+16:04:15 | val classes:   other=945 target=31 
+16:04:16 | rep 3 | train: 6634 val: 1068 
+16:04:16 | train classes: other=6333 target=301 
+16:04:16 | val classes:   other=1025 target=43 
+16:04:17 | rep 1 | train: 6255 val: 1447 
+16:04:17 | train classes: other=6010 target=245 
+16:04:17 | val classes:   other=1348 target=99 
+16:04:18 | rep 2 | train: 6546 val: 1156 
+16:04:18 | train classes: other=6229 target=317 
+16:04:18 | val classes:   other=1129 target=27 
+16:04:18 | rep 3 | train: 6036 val: 1666 
+16:04:18 | train classes: other=5796 target=240 
+16:04:18 | val classes:   other=1562 target=104 
+16:04:20 | rep 1 | train: 6657 val: 1045 
+16:04:20 | train classes: other=6406 target=251 
+16:04:20 | val classes:   other=952 target=93 
+16:04:21 | rep 2 | train: 6919 val: 783 
+16:04:21 | train classes: other=6651 target=268 
+16:04:21 | val classes:   other=707 target=76 
+16:04:21 | rep 3 | train: 6132 val: 1570 
+16:04:21 | train classes: other=5869 target=263 
+16:04:21 | val classes:   other=1489 target=81 
+16:04:23 | rep 1 | train: 7780 val: 2728 
+16:04:23 | train classes: other=4918 target=2862 
+16:04:23 | val classes:   other=1435 target=1293 
+16:04:23 | rep 2 | train: 8979 val: 1529 
+16:04:23 | train classes: other=5394 target=3585 
+16:04:23 | val classes:   other=959 target=570 
+16:04:24 | rep 3 | train: 7762 val: 2746 
+16:04:24 | train classes: other=4462 target=3300 
+16:04:24 | val classes:   other=1891 target=855 
+16:04:24 | rep 1 | train: 9042 val: 1466 
+16:04:24 | train classes: other=5610 target=3432 
+16:04:24 | val classes:   other=743 target=723 
+16:04:25 | rep 2 | train: 8445 val: 2063 
+16:04:25 | train classes: other=5120 target=3325 
+16:04:25 | val classes:   other=1233 target=830 
+16:04:26 | rep 3 | train: 7606 val: 2902 
+16:04:26 | train classes: other=4917 target=2689 
+16:04:26 | val classes:   other=1436 target=1466 
+16:04:27 | rep 1 | train: 6671 val: 3837 
+16:04:27 | train classes: other=3522 target=3149 
+16:04:27 | val classes:   other=2831 target=1006 
+16:04:27 | rep 2 | train: 8388 val: 2120 
+16:04:27 | train classes: other=5302 target=3086 
+16:04:27 | val classes:   other=1051 target=1069 
+16:04:27 | rep 3 | train: 7212 val: 3296 
+16:04:27 | train classes: other=4326 target=2886 
+16:04:27 | val classes:   other=2027 target=1269 
+16:04:28 | rep 1 | train: 8502 val: 2006 
+16:04:28 | train classes: other=5292 target=3210 
+16:04:28 | val classes:   other=1061 target=945 
+16:04:29 | rep 2 | train: 8388 val: 2120 
+16:04:29 | train classes: other=5066 target=3322 
+16:04:29 | val classes:   other=1287 target=833 
+16:04:30 | rep 3 | train: 9058 val: 1450 
+16:04:30 | train classes: other=5498 target=3560 
+16:04:30 | val classes:   other=855 target=595 
+16:04:34 | rep 1 | train: 8926 val: 1582 
+16:04:34 | train classes: other=5290 target=3636 
+16:04:34 | val classes:   other=1063 target=519 
+16:04:36 | rep 2 | train: 8052 val: 2456 
+16:04:36 | train classes: other=5382 target=2670 
+16:04:36 | val classes:   other=971 target=1485 
+16:04:37 | rep 3 | train: 9244 val: 1264 
+16:04:37 | train classes: other=5707 target=3537 
+16:04:37 | val classes:   other=646 target=618 
+16:04:40 | rep 1 | train: 7543 val: 2965 
+16:04:40 | train classes: other=4381 target=3162 
+16:04:40 | val classes:   other=1972 target=993 
+16:04:40 | rep 2 | train: 7326 val: 3182 
+16:04:40 | train classes: other=4397 target=2929 
+16:04:40 | val classes:   other=1956 target=1226 
+16:04:41 | rep 3 | train: 8333 val: 2175 
+16:04:41 | train classes: other=5196 target=3137 
+16:04:41 | val classes:   other=1157 target=1018 
+16:04:43 | rep 1 | train: 8628 val: 1880 
+16:04:43 | train classes: other=4981 target=3647 
+16:04:43 | val classes:   other=1372 target=508 
+16:04:44 | rep 2 | train: 7750 val: 2758 
+16:04:44 | train classes: other=4550 target=3200 
+16:04:44 | val classes:   other=1803 target=955 
+16:04:45 | rep 3 | train: 8915 val: 1593 
+16:04:45 | train classes: other=5531 target=3384 
+16:04:45 | val classes:   other=822 target=771 
+16:04:49 | rep 1 | train: 8651 val: 1857 
+16:04:49 | train classes: other=4927 target=3724 
+16:04:49 | val classes:   other=1426 target=431 
+16:04:49 | rep 2 | train: 8894 val: 1614 
+16:04:49 | train classes: other=5021 target=3873 
+16:04:49 | val classes:   other=1332 target=282 
+16:04:49 | rep 3 | train: 7483 val: 3025 
+16:04:49 | train classes: other=4707 target=2776 
+16:04:49 | val classes:   other=1646 target=1379 
+16:04:51 | rep 1 | train: 8877 val: 1631 
+16:04:51 | train classes: other=5463 target=3414 
+16:04:51 | val classes:   other=890 target=741 
+16:04:52 | rep 2 | train: 9386 val: 1122 
+16:04:52 | train classes: other=5451 target=3935 
+16:04:52 | val classes:   other=902 target=220 
+16:04:53 | rep 3 | train: 8996 val: 1512 
+16:04:53 | train classes: other=5408 target=3588 
+16:04:53 | val classes:   other=945 target=567 
+16:04:55 | rep 1 | train: 7736 val: 2772 
+16:04:55 | train classes: other=4560 target=3176 
+16:04:55 | val classes:   other=1793 target=979 
+16:04:55 | rep 2 | train: 7392 val: 3116 
+16:04:55 | train classes: other=4268 target=3124 
+16:04:55 | val classes:   other=2085 target=1031 
+16:04:55 | rep 3 | train: 8733 val: 1775 
+16:04:55 | train classes: other=4958 target=3775 
+16:04:55 | val classes:   other=1395 target=380 
+16:04:56 | rep 1 | train: 7085 val: 1360 
+16:04:56 | train classes: other=4263 target=2822 
+16:04:56 | val classes:   other=874 target=486 
+16:04:57 | rep 2 | train: 5594 val: 2851 
+16:04:57 | train classes: other=4026 target=1568 
+16:04:57 | val classes:   other=1111 target=1740 
+16:04:58 | rep 3 | train: 6184 val: 2261 
+16:04:58 | train classes: other=3583 target=2601 
+16:04:58 | val classes:   other=1554 target=707 
+16:04:59 | rep 1 | train: 7431 val: 1014 
+16:04:59 | train classes: other=4520 target=2911 
+16:04:59 | val classes:   other=617 target=397 
+16:05:01 | rep 2 | train: 6976 val: 1469 
+16:05:01 | train classes: other=3939 target=3037 
+16:05:01 | val classes:   other=1198 target=271 
+16:05:03 | rep 3 | train: 6454 val: 1991 
+16:05:03 | train classes: other=3770 target=2684 
+16:05:03 | val classes:   other=1367 target=624 
+16:05:05 | rep 1 | train: 6843 val: 1602 
+16:05:05 | train classes: other=4069 target=2774 
+16:05:05 | val classes:   other=1068 target=534 
+16:05:06 | rep 2 | train: 6304 val: 2141 
+16:05:06 | train classes: other=3647 target=2657 
+16:05:06 | val classes:   other=1490 target=651 
+16:05:07 | rep 3 | train: 7004 val: 1441 
+16:05:07 | train classes: other=4183 target=2821 
+16:05:07 | val classes:   other=954 target=487 
+16:05:08 | rep 1 | train: 6841 val: 1604 
+16:05:08 | train classes: other=3686 target=3155 
+16:05:08 | val classes:   other=1451 target=153 
+16:05:09 | rep 2 | train: 6856 val: 1589 
+16:05:09 | train classes: other=4337 target=2519 
+16:05:09 | val classes:   other=800 target=789 
+16:05:09 | rep 3 | train: 6913 val: 1532 
+16:05:09 | train classes: other=4363 target=2550 
+16:05:09 | val classes:   other=774 target=758 
+16:05:12 | rep 1 | train: 7262 val: 1183 
+16:05:12 | train classes: other=4441 target=2821 
+16:05:12 | val classes:   other=696 target=487 
+16:05:12 | rep 2 | train: 6761 val: 1684 
+16:05:12 | train classes: other=3642 target=3119 
+16:05:12 | val classes:   other=1495 target=189 
+16:05:12 | rep 3 | train: 6623 val: 1822 
+16:05:12 | train classes: other=4229 target=2394 
+16:05:12 | val classes:   other=908 target=914 
+16:05:15 | rep 1 | train: 6425 val: 2020 
+16:05:15 | train classes: other=3733 target=2692 
+16:05:15 | val classes:   other=1404 target=616 
+16:05:15 | rep 2 | train: 7285 val: 1160 
+16:05:15 | train classes: other=4063 target=3222 
+16:05:15 | val classes:   other=1074 target=86 
+16:05:15 | rep 3 | train: 6983 val: 1462 
+16:05:15 | train classes: other=4357 target=2626 
+16:05:15 | val classes:   other=780 target=682 
+16:05:16 | rep 1 | train: 6355 val: 2090 
+16:05:16 | train classes: other=4145 target=2210 
+16:05:16 | val classes:   other=992 target=1098 
+16:05:18 | rep 2 | train: 6529 val: 1916 
+16:05:18 | train classes: other=4177 target=2352 
+16:05:18 | val classes:   other=960 target=956 
+16:05:19 | rep 3 | train: 7448 val: 997 
+16:05:19 | train classes: other=4344 target=3104 
+16:05:19 | val classes:   other=793 target=204 
+16:05:22 | rep 1 | train: 6480 val: 1965 
+16:05:22 | train classes: other=4498 target=1982 
+16:05:22 | val classes:   other=639 target=1326 
+16:05:22 | rep 2 | train: 7097 val: 1348 
+16:05:22 | train classes: other=4034 target=3063 
+16:05:22 | val classes:   other=1103 target=245 
+16:05:22 | rep 3 | train: 6155 val: 2290 
+16:05:22 | train classes: other=3884 target=2271 
+16:05:22 | val classes:   other=1253 target=1037 
+16:05:25 | rep 1 | train: 6340 val: 2105 
+16:05:25 | train classes: other=3786 target=2554 
+16:05:25 | val classes:   other=1351 target=754 
+16:05:25 | rep 2 | train: 7290 val: 1155 
+16:05:25 | train classes: other=4393 target=2897 
+16:05:25 | val classes:   other=744 target=411 
+16:05:25 | rep 3 | train: 7108 val: 1337 
+16:05:25 | train classes: other=3941 target=3167 
+16:05:25 | val classes:   other=1196 target=141 
+16:05:27 | rep 1 | train: 6184 val: 2261 
+16:05:27 | train classes: other=3583 target=2601 
+16:05:27 | val classes:   other=1554 target=707 
+16:05:28 | rep 2 | train: 6875 val: 1570 
+16:05:28 | train classes: other=4581 target=2294 
+16:05:28 | val classes:   other=556 target=1014 
+16:05:29 | rep 3 | train: 7431 val: 1014 
+16:05:29 | train classes: other=4489 target=2942 
+16:05:29 | val classes:   other=648 target=366 
+16:05:30 | rep 1 | train: 10095 val: 1952 
+16:05:30 | train classes: other=6327 target=3768 
+16:05:30 | val classes:   other=1029 target=923 
+16:05:33 | rep 2 | train: 9988 val: 2059 
+16:05:33 | train classes: other=5840 target=4148 
+16:05:33 | val classes:   other=1516 target=543 
+16:05:35 | rep 3 | train: 8756 val: 3291 
+16:05:35 | train classes: other=5776 target=2980 
+16:05:35 | val classes:   other=1580 target=1711 
+16:05:37 | rep 1 | train: 8942 val: 3105 
+16:05:37 | train classes: other=5521 target=3421 
+16:05:37 | val classes:   other=1835 target=1270 
+16:05:38 | rep 2 | train: 9588 val: 2459 
+16:05:38 | train classes: other=6023 target=3565 
+16:05:38 | val classes:   other=1333 target=1126 
+16:05:39 | rep 3 | train: 10296 val: 1751 
+16:05:39 | train classes: other=6487 target=3809 
+16:05:39 | val classes:   other=869 target=882 
+16:05:40 | rep 1 | train: 10314 val: 1733 
+16:05:40 | train classes: other=5956 target=4358 
+16:05:40 | val classes:   other=1400 target=333 
+16:05:41 | rep 2 | train: 10236 val: 1811 
+16:05:41 | train classes: other=6468 target=3768 
+16:05:41 | val classes:   other=888 target=923 
+16:05:42 | rep 3 | train: 10080 val: 1967 
+16:05:42 | train classes: other=6179 target=3901 
+16:05:42 | val classes:   other=1177 target=790 
+16:05:44 | rep 1 | train: 9988 val: 2059 
+16:05:44 | train classes: other=6123 target=3865 
+16:05:44 | val classes:   other=1233 target=826 
+16:05:45 | rep 2 | train: 9404 val: 2643 
+16:05:45 | train classes: other=5844 target=3560 
+16:05:45 | val classes:   other=1512 target=1131 
+16:05:46 | rep 3 | train: 10079 val: 1968 
+16:05:46 | train classes: other=6279 target=3800 
+16:05:46 | val classes:   other=1077 target=891 
+16:05:49 | rep 1 | train: 10836 val: 1211 
+16:05:49 | train classes: other=6458 target=4378 
+16:05:49 | val classes:   other=898 target=313 
+16:05:54 | rep 2 | train: 9684 val: 2363 
+16:05:54 | train classes: other=5536 target=4148 
+16:05:54 | val classes:   other=1820 target=543 
+16:05:58 | rep 3 | train: 9002 val: 3045 
+16:05:58 | train classes: other=5126 target=3876 
+16:05:58 | val classes:   other=2230 target=815 
+16:06:04 | rep 1 | train: 9440 val: 2607 
+16:06:04 | train classes: other=5887 target=3553 
+16:06:04 | val classes:   other=1469 target=1138 
+16:06:06 | rep 2 | train: 10514 val: 1533 
+16:06:06 | train classes: other=6505 target=4009 
+16:06:06 | val classes:   other=851 target=682 
+16:06:08 | rep 3 | train: 9052 val: 2995 
+16:06:08 | train classes: other=5659 target=3393 
+16:06:08 | val classes:   other=1697 target=1298 
+16:06:11 | rep 1 | train: 9918 val: 2129 
+16:06:11 | train classes: other=6198 target=3720 
+16:06:11 | val classes:   other=1158 target=971 
+16:06:12 | rep 2 | train: 9751 val: 2296 
+16:06:12 | train classes: other=5661 target=4090 
+16:06:12 | val classes:   other=1695 target=601 
+16:06:13 | rep 3 | train: 10468 val: 1579 
+16:06:13 | train classes: other=6668 target=3800 
+16:06:13 | val classes:   other=688 target=891 
+16:06:15 | rep 1 | train: 9769 val: 2278 
+16:06:15 | train classes: other=5216 target=4553 
+16:06:15 | val classes:   other=2140 target=138 
+16:06:16 | rep 2 | train: 10272 val: 1775 
+16:06:16 | train classes: other=6428 target=3844 
+16:06:16 | val classes:   other=928 target=847 
+16:06:17 | rep 3 | train: 9934 val: 2113 
+16:06:17 | train classes: other=6159 target=3775 
+16:06:17 | val classes:   other=1197 target=916 
+16:06:19 | rep 1 | train: 9364 val: 2683 
+16:06:19 | train classes: other=6262 target=3102 
+16:06:19 | val classes:   other=1094 target=1589 
+16:06:20 | rep 2 | train: 9815 val: 2232 
+16:06:20 | train classes: other=5977 target=3838 
+16:06:20 | val classes:   other=1379 target=853 
+16:06:21 | rep 3 | train: 9297 val: 2750 
+16:06:21 | train classes: other=6000 target=3297 
+16:06:21 | val classes:   other=1356 target=1394 
+16:06:23 | rep 1 | train: 9824 val: 2223 
+16:06:23 | train classes: other=6374 target=3450 
+16:06:23 | val classes:   other=982 target=1241 
+16:06:24 | rep 2 | train: 9525 val: 2522 
+16:06:24 | train classes: other=5912 target=3613 
+16:06:24 | val classes:   other=1444 target=1078 
+16:06:25 | rep 3 | train: 8791 val: 3256 
+16:06:25 | train classes: other=5536 target=3255 
+16:06:25 | val classes:   other=1820 target=1436 
+16:06:27 | rep 1 | train: 5196 val: 1381 
+16:06:27 | train classes: other=4992 target=204 
+16:06:27 | val classes:   other=1361 target=20 
+16:06:27 | rep 2 | train: 4701 val: 1876 
+16:06:27 | train classes: other=4525 target=176 
+16:06:27 | val classes:   other=1828 target=48 
+16:06:28 | rep 3 | train: 5134 val: 1443 
+16:06:28 | train classes: other=4957 target=177 
+16:06:28 | val classes:   other=1396 target=47 
+16:06:29 | rep 1 | train: 5524 val: 1053 
+16:06:29 | train classes: other=5348 target=176 
+16:06:29 | val classes:   other=1005 target=48 
+16:06:30 | rep 2 | train: 5160 val: 1417 
+16:06:30 | train classes: other=4975 target=185 
+16:06:30 | val classes:   other=1378 target=39 
+16:06:30 | rep 3 | train: 4997 val: 1580 
+16:06:30 | train classes: other=4802 target=195 
+16:06:30 | val classes:   other=1551 target=29 
+16:06:31 | rep 1 | train: 4544 val: 2033 
+16:06:31 | train classes: other=4406 target=138 
+16:06:31 | val classes:   other=1947 target=86 
+16:06:31 | rep 2 | train: 4360 val: 2217 
+16:06:31 | train classes: other=4187 target=173 
+16:06:31 | val classes:   other=2166 target=51 
+16:06:32 | rep 3 | train: 5446 val: 1131 
+16:06:32 | train classes: other=5253 target=193 
+16:06:32 | val classes:   other=1100 target=31 
+16:06:33 | rep 1 | train: 4903 val: 1674 
+16:06:33 | train classes: other=4695 target=208 
+16:06:33 | val classes:   other=1658 target=16 
+16:06:34 | rep 2 | train: 5768 val: 809 
+16:06:34 | train classes: other=5607 target=161 
+16:06:34 | val classes:   other=746 target=63 
+16:06:35 | rep 3 | train: 4616 val: 1961 
+16:06:35 | train classes: other=4437 target=179 
+16:06:35 | val classes:   other=1916 target=45 
+16:06:37 | rep 1 | train: 5128 val: 1449 
+16:06:37 | train classes: other=4918 target=210 
+16:06:37 | val classes:   other=1435 target=14 
+16:06:37 | rep 2 | train: 4544 val: 2033 
+16:06:37 | train classes: other=4387 target=157 
+16:06:37 | val classes:   other=1966 target=67 
+16:06:38 | rep 3 | train: 3994 val: 2583 
+16:06:38 | train classes: other=3855 target=139 
+16:06:38 | val classes:   other=2498 target=85 
+16:06:39 | rep 1 | train: 4437 val: 2140 
+16:06:39 | train classes: other=4251 target=186 
+16:06:39 | val classes:   other=2102 target=38 
+16:06:40 | rep 2 | train: 4986 val: 1591 
+16:06:40 | train classes: other=4789 target=197 
+16:06:40 | val classes:   other=1564 target=27 
+16:06:42 | rep 3 | train: 4302 val: 2275 
+16:06:42 | train classes: other=4164 target=138 
+16:06:42 | val classes:   other=2189 target=86 
+16:06:44 | rep 1 | train: 5321 val: 1256 
+16:06:44 | train classes: other=5150 target=171 
+16:06:44 | val classes:   other=1203 target=53 
+16:06:45 | rep 2 | train: 5250 val: 1327 
+16:06:45 | train classes: other=5102 target=148 
+16:06:45 | val classes:   other=1251 target=76 
+16:06:46 | rep 3 | train: 4514 val: 2063 
+16:06:46 | train classes: other=4333 target=181 
+16:06:46 | val classes:   other=2020 target=43 
+16:06:48 | rep 1 | train: 5772 val: 805 
+16:06:48 | train classes: other=5571 target=201 
+16:06:48 | val classes:   other=782 target=23 
+16:06:49 | rep 2 | train: 5574 val: 1003 
+16:06:49 | train classes: other=5398 target=176 
+16:06:49 | val classes:   other=955 target=48 
+16:06:49 | rep 3 | train: 4905 val: 1672 
+16:06:49 | train classes: other=4732 target=173 
+16:06:49 | val classes:   other=1621 target=51 
+16:06:51 | rep 1 | train: 5057 val: 1520 
+16:06:51 | train classes: other=4887 target=170 
+16:06:51 | val classes:   other=1466 target=54 
+16:06:51 | rep 2 | train: 5560 val: 1017 
+16:06:51 | train classes: other=5365 target=195 
+16:06:51 | val classes:   other=988 target=29 
+16:06:51 | rep 3 | train: 5749 val: 828 
+16:06:51 | train classes: other=5574 target=175 
+16:06:51 | val classes:   other=779 target=49 
+16:06:53 | rep 1 | train: 4832 val: 1745 
+16:06:53 | train classes: other=4641 target=191 
+16:06:53 | val classes:   other=1712 target=33 
+16:06:54 | rep 2 | train: 4131 val: 2446 
+16:06:54 | train classes: other=3973 target=158 
+16:06:54 | val classes:   other=2380 target=66 
+16:06:55 | rep 3 | train: 5277 val: 1300 
+16:06:55 | train classes: other=5073 target=204 
+16:06:55 | val classes:   other=1280 target=20 
+16:07:02 | rep 1 | train: 4361 val: 1069 
+16:07:02 | train classes: other=4084 target=277 
+16:07:02 | val classes:   other=1053 target=16 
+16:07:02 | rep 2 | train: 4092 val: 1338 
+16:07:02 | train classes: other=3912 target=180 
+16:07:02 | val classes:   other=1225 target=113 
+16:07:02 | rep 3 | train: 4663 val: 767 
+16:07:02 | train classes: other=4411 target=252 
+16:07:02 | val classes:   other=726 target=41 
+16:07:03 | rep 1 | train: 4288 val: 1142 
+16:07:03 | train classes: other=4060 target=228 
+16:07:03 | val classes:   other=1077 target=65 
+16:07:03 | rep 2 | train: 4497 val: 933 
+16:07:03 | train classes: other=4237 target=260 
+16:07:03 | val classes:   other=900 target=33 
+16:07:04 | rep 3 | train: 4434 val: 996 
+16:07:04 | train classes: other=4195 target=239 
+16:07:04 | val classes:   other=942 target=54 
+16:07:05 | rep 1 | train: 4449 val: 981 
+16:07:05 | train classes: other=4189 target=260 
+16:07:05 | val classes:   other=948 target=33 
+16:07:07 | rep 2 | train: 4897 val: 533 
+16:07:07 | train classes: other=4628 target=269 
+16:07:07 | val classes:   other=509 target=24 
+16:07:08 | rep 3 | train: 4389 val: 1041 
+16:07:08 | train classes: other=4164 target=225 
+16:07:08 | val classes:   other=973 target=68 
+16:07:10 | rep 1 | train: 4020 val: 1410 
+16:07:10 | train classes: other=3740 target=280 
+16:07:10 | val classes:   other=1397 target=13 
+16:07:10 | rep 2 | train: 4176 val: 1254 
+16:07:10 | train classes: other=3923 target=253 
+16:07:10 | val classes:   other=1214 target=40 
+16:07:10 | rep 3 | train: 4673 val: 757 
+16:07:10 | train classes: other=4459 target=214 
+16:07:10 | val classes:   other=678 target=79 
+16:07:11 | rep 1 | train: 3946 val: 1484 
+16:07:11 | train classes: other=3673 target=273 
+16:07:11 | val classes:   other=1464 target=20 
+16:07:11 | rep 2 | train: 4782 val: 648 
+16:07:11 | train classes: other=4527 target=255 
+16:07:11 | val classes:   other=610 target=38 
+16:07:12 | rep 3 | train: 4014 val: 1416 
+16:07:12 | train classes: other=3833 target=181 
+16:07:12 | val classes:   other=1304 target=112 
+16:07:13 | rep 1 | train: 4534 val: 896 
+16:07:13 | train classes: other=4271 target=263 
+16:07:13 | val classes:   other=866 target=30 
+16:07:13 | rep 2 | train: 4249 val: 1181 
+16:07:13 | train classes: other=4035 target=214 
+16:07:13 | val classes:   other=1102 target=79 
+16:07:13 | rep 3 | train: 4102 val: 1328 
+16:07:13 | train classes: other=3886 target=216 
+16:07:13 | val classes:   other=1251 target=77 
+16:07:16 | rep 1 | train: 4598 val: 832 
+16:07:16 | train classes: other=4397 target=201 
+16:07:16 | val classes:   other=740 target=92 
+16:07:16 | rep 2 | train: 4133 val: 1297 
+16:07:16 | train classes: other=3855 target=278 
+16:07:16 | val classes:   other=1282 target=15 
+16:07:16 | rep 3 | train: 4664 val: 766 
+16:07:16 | train classes: other=4414 target=250 
+16:07:16 | val classes:   other=723 target=43 
+16:07:17 | rep 1 | train: 4717 val: 713 
+16:07:17 | train classes: other=4465 target=252 
+16:07:17 | val classes:   other=672 target=41 
+16:07:18 | rep 2 | train: 4585 val: 845 
+16:07:18 | train classes: other=4329 target=256 
+16:07:18 | val classes:   other=808 target=37 
+16:07:19 | rep 3 | train: 4808 val: 622 
+16:07:19 | train classes: other=4546 target=262 
+16:07:19 | val classes:   other=591 target=31 
+16:07:22 | rep 1 | train: 4634 val: 796 
+16:07:22 | train classes: other=4412 target=222 
+16:07:22 | val classes:   other=725 target=71 
+16:07:25 | rep 2 | train: 4795 val: 635 
+16:07:25 | train classes: other=4563 target=232 
+16:07:25 | val classes:   other=574 target=61 
+16:07:28 | rep 3 | train: 4259 val: 1171 
+16:07:28 | train classes: other=3982 target=277 
+16:07:28 | val classes:   other=1155 target=16 
+16:07:32 | rep 1 | train: 4506 val: 924 
+16:07:32 | train classes: other=4281 target=225 
+16:07:32 | val classes:   other=856 target=68 
+16:07:33 | rep 2 | train: 4457 val: 973 
+16:07:33 | train classes: other=4272 target=185 
+16:07:33 | val classes:   other=865 target=108 
+16:07:33 | rep 3 | train: 4182 val: 1248 
+16:07:33 | train classes: other=3929 target=253 
+16:07:33 | val classes:   other=1208 target=40 
+16:07:36 | rep 1 | train: 6457 val: 1245 
+16:07:36 | train classes: other=6184 target=273 
+16:07:36 | val classes:   other=1174 target=71 
+16:07:37 | rep 2 | train: 5915 val: 1787 
+16:07:37 | train classes: other=5634 target=281 
+16:07:37 | val classes:   other=1724 target=63 
+16:07:37 | rep 3 | train: 6983 val: 719 
+16:07:37 | train classes: other=6691 target=292 
+16:07:37 | val classes:   other=667 target=52 
+16:07:38 | rep 1 | train: 6451 val: 1251 
+16:07:38 | train classes: other=6242 target=209 
+16:07:38 | val classes:   other=1116 target=135 
+16:07:39 | rep 2 | train: 6173 val: 1529 
+16:07:39 | train classes: other=5958 target=215 
+16:07:39 | val classes:   other=1400 target=129 
+16:07:40 | rep 3 | train: 6642 val: 1060 
+16:07:40 | train classes: other=6319 target=323 
+16:07:40 | val classes:   other=1039 target=21 
+16:07:42 | rep 1 | train: 6842 val: 860 
+16:07:42 | train classes: other=6594 target=248 
+16:07:42 | val classes:   other=764 target=96 
+16:07:43 | rep 2 | train: 6139 val: 1563 
+16:07:43 | train classes: other=5888 target=251 
+16:07:43 | val classes:   other=1470 target=93 
+16:07:45 | rep 3 | train: 6560 val: 1142 
+16:07:45 | train classes: other=6231 target=329 
+16:07:45 | val classes:   other=1127 target=15 
+16:07:47 | rep 1 | train: 5780 val: 1922 
+16:07:47 | train classes: other=5473 target=307 
+16:07:47 | val classes:   other=1885 target=37 
+16:07:48 | rep 2 | train: 6183 val: 1519 
+16:07:48 | train classes: other=5884 target=299 
+16:07:48 | val classes:   other=1474 target=45 
+16:07:49 | rep 3 | train: 6284 val: 1418 
+16:07:49 | train classes: other=5966 target=318 
+16:07:49 | val classes:   other=1392 target=26 
+16:07:51 | rep 1 | train: 6654 val: 1048 
+16:07:51 | train classes: other=6326 target=328 
+16:07:51 | val classes:   other=1032 target=16 
+16:07:52 | rep 2 | train: 6894 val: 808 
+16:07:52 | train classes: other=6592 target=302 
+16:07:52 | val classes:   other=766 target=42 
+16:07:52 | rep 3 | train: 6404 val: 1298 
+16:07:52 | train classes: other=6130 target=274 
+16:07:52 | val classes:   other=1228 target=70 
+16:07:54 | rep 1 | train: 6055 val: 1647 
+16:07:54 | train classes: other=5809 target=246 
+16:07:54 | val classes:   other=1549 target=98 
+16:07:55 | rep 2 | train: 6287 val: 1415 
+16:07:55 | train classes: other=6020 target=267 
+16:07:55 | val classes:   other=1338 target=77 
+16:07:56 | rep 3 | train: 6359 val: 1343 
+16:07:56 | train classes: other=6050 target=309 
+16:07:56 | val classes:   other=1308 target=35 
+16:07:59 | rep 1 | train: 7002 val: 700 
+16:07:59 | train classes: other=6696 target=306 
+16:07:59 | val classes:   other=662 target=38 
+16:07:59 | rep 2 | train: 5943 val: 1759 
+16:07:59 | train classes: other=5694 target=249 
+16:07:59 | val classes:   other=1664 target=95 
+16:07:59 | rep 3 | train: 6483 val: 1219 
+16:07:59 | train classes: other=6160 target=323 
+16:07:59 | val classes:   other=1198 target=21 
+16:08:01 | rep 1 | train: 6366 val: 1336 
+16:08:01 | train classes: other=6072 target=294 
+16:08:01 | val classes:   other=1286 target=50 
+16:08:02 | rep 2 | train: 5641 val: 2061 
+16:08:02 | train classes: other=5341 target=300 
+16:08:02 | val classes:   other=2017 target=44 
+16:08:04 | rep 3 | train: 6875 val: 827 
+16:08:04 | train classes: other=6586 target=289 
+16:08:04 | val classes:   other=772 target=55 
+16:08:07 | rep 1 | train: 5141 val: 2561 
+16:08:07 | train classes: other=4825 target=316 
+16:08:07 | val classes:   other=2533 target=28 
+16:08:08 | rep 2 | train: 6026 val: 1676 
+16:08:08 | train classes: other=5814 target=212 
+16:08:08 | val classes:   other=1544 target=132 
+16:08:08 | rep 3 | train: 5949 val: 1753 
+16:08:08 | train classes: other=5641 target=308 
+16:08:08 | val classes:   other=1717 target=36 
+16:08:10 | rep 1 | train: 6132 val: 1570 
+16:08:10 | train classes: other=5949 target=183 
+16:08:10 | val classes:   other=1409 target=161 
+16:08:10 | rep 2 | train: 5426 val: 2276 
+16:08:10 | train classes: other=5142 target=284 
+16:08:10 | val classes:   other=2216 target=60 
+16:08:11 | rep 3 | train: 6877 val: 825 
+16:08:11 | train classes: other=6611 target=266 
+16:08:11 | val classes:   other=747 target=78 
