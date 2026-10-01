@@ -11,7 +11,7 @@ generate_features_master <- function(data, sample_rate, overlap_setting, window_
       dplyr::filter(ID == id) %>% 
       as.data.table()
     
-    feature_data <- processDataPerID(data1, 
+    feature_data <- process_features_per_chunk(data1, 
                                      features_type = c("timeseries", "statistical"), 
                                      window_length = window_setting, 
                                      sample_rate = sample_rate, 
@@ -27,7 +27,7 @@ generate_features_master <- function(data, sample_rate, overlap_setting, window_
 }
 
 # Function to process data for each ID
-processDataPerID <- function(id_raw_data, features_type, window_length, sample_rate, overlap_percent, available_axes) {
+process_features_per_chunk <- function(id_raw_data, features_type, window_length, sample_rate, overlap_percent, available_axes) {
   
   # Calculate window length and overlap
   samples_per_window <- window_length * sample_rate

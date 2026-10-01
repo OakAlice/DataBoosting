@@ -32,8 +32,15 @@ generate_confusion_plot <- function(conf_matrix_padded, save_path) {
          plot = confusion_plot, width = 16, height = 8)
 }
 
-# Function to compute confusion matrix metrics
-compute_metrics <- function(predicted_classes, ground_truth_labels, type = "multiclass") {
+# Function to compute confusion matrix metrics (+ AUC-ROC / AUC-PR if probabilities supplied)
+# probabilities: multiclass -> matrix/data.frame of class probabilities, colnames = class labels
+#                binary     -> numeric vector of P("target"), or a matrix with a "target" column
+compute_metrics <- function(predicted_classes, ground_truth_labels, type = c("multiclass", "binary"),
+                            probabilities = NULL) {
+  type <- match.arg(type)
+  predicted_classes   <- as.factor(predicted_classes)
+  ground_truth_labels <- as.factor(ground_truth_labels)
+  
   # Compute confusion matrix
   confusion_matrix <- table(predicted_classes, ground_truth_labels)
   all_classes <- union(levels(predicted_classes), levels(ground_truth_labels))
@@ -55,45 +62,77 @@ compute_metrics <- function(predicted_classes, ground_truth_labels, type = "mult
     byClass <- t(as.matrix(byClass))
     rownames(byClass) <- "target"
   }
+  # caret prefixes rownames with "Class: " for multiclass
+  rownames(byClass) <- sub("^Class: ", "", rownames(byClass))
   
   metrics <- data.frame(
-    Behaviour  = rownames(byClass),
-    Accuracy   = byClass[, "Balanced Accuracy"],
-    Sensitivity = byClass[, "Sensitivity"],
-    Specificity = byClass[, "Specificity"],
-    Precision  = byClass[, "Precision"],
-    Recall     = byClass[, "Recall"],
-    F1         = byClass[, "F1"],
+    Behaviour      = rownames(byClass),
+    Accuracy       = byClass[, "Balanced Accuracy"],
+    Sensitivity    = byClass[, "Sensitivity"],
+    Specificity    = byClass[, "Specificity"],
+    Precision      = byClass[, "Precision"],
+    Recall         = byClass[, "Recall"],
+    F1             = byClass[, "F1"],
     Detection_Rate = byClass[, "Detection Rate"],
-    Prevalence = byClass[, "Prevalence"],
-    row.names  = NULL
+    Prevalence     = byClass[, "Prevalence"],
+    row.names      = NULL
   )
   
-  if (type == "multiclass"){
-    # Add prevelance weighted metrics as the last row
-    total_counts <- sum(metrics$Prevalence)
+  # Threshold-independent metrics (one-vs-rest per class): need predicted probabilities
+  if (!is.null(probabilities)) {
+    if (is.null(dim(probabilities))) { # binary vector -> matrix
+      probabilities <- cbind(target = probabilities)
+    }
+    probabilities <- as.matrix(probabilities)
+    
+    auc_one_vs_rest <- function(cls) {
+      if (!cls %in% colnames(probabilities)) return(c(roc = NA_real_, pr = NA_real_))
+      is_pos <- ground_truth_labels == cls
+      scores <- probabilities[, cls]
+      # AUC is undefined if the class is absent or is the only class present
+      if (sum(is_pos) == 0 || sum(!is_pos) == 0) return(c(roc = NA_real_, pr = NA_real_))
+      roc <- as.numeric(pROC::auc(pROC::roc(response = is_pos, predictor = scores,
+                                            levels = c(FALSE, TRUE), direction = "<",
+                                            quiet = TRUE)))
+      pr  <- PRROC::pr.curve(scores.class0 = scores[is_pos],
+                             scores.class1 = scores[!is_pos])$auc.integral
+      c(roc = roc, pr = pr)
+    }
+    
+    aucs <- vapply(metrics$Behaviour, auc_one_vs_rest, numeric(2))
+    metrics$AUC_ROC <- aucs["roc", ]
+    metrics$AUC_PR  <- aucs["pr", ]
+  }
+  
+  if (type == "multiclass") {
+    # Add prevalence weighted metrics as the last row
+    total_counts <- sum(metrics$Prevalence, na.rm = TRUE)
     # set all the NA values to 0
     metrics[is.na(metrics)] <- 0 # do not na.rm = TRUE otherwise the model can cheat and move towards not predicting classes at all
+    
+    wmean <- function(x) sum(x * metrics$Prevalence) / total_counts
+    
     overall_metrics <- data.frame(
-      Behaviour   = "WeightedOverall",
-      Accuracy    = confusion_mtx$overall["Accuracy"],   # still raw overall accuracy
-      Precision   = sum(metrics$Precision * metrics$Prevalence) / total_counts,
-      Recall      = sum(metrics$Recall * metrics$Prevalence) / total_counts,
-      F1          = sum(metrics$F1 * metrics$Prevalence) / total_counts,
-      Prevalence = NA,
+      Behaviour  = "WeightedOverall",
+      Accuracy   = unname(confusion_mtx$overall["Accuracy"]),   # still raw overall accuracy
+      Precision  = wmean(metrics$Precision),
+      Recall     = wmean(metrics$Recall),
+      F1         = wmean(metrics$F1),
       row.names  = NULL
     )
-  
-    metrics <- rbind(
-      metrics,
-      overall_metrics
-    )
+    if (!is.null(probabilities)) {
+      overall_metrics$AUC_ROC <- wmean(metrics$AUC_ROC)
+      overall_metrics$AUC_PR  <- wmean(metrics$AUC_PR)
+    }
+    
+    # columns not summarised overall (Sensitivity, Specificity, etc.) -> NA so rbind works
+    overall_metrics[setdiff(names(metrics), names(overall_metrics))] <- NA
+    metrics <- rbind(metrics, overall_metrics[names(metrics)])
   }
   
   return(list(metrics = metrics,
               conf_matrix_padded = conf_matrix_padded))
 }
-
 
 test_model <- function(type, model, test_data, metadata_cols, target_col){
   #' Function to test the supervised machine learning random forest ranger model
@@ -117,16 +156,20 @@ test_model <- function(type, model, test_data, metadata_cols, target_col){
   if (anyNA(numeric_testing_data)) message("Validation data contains missing values!")
   testing_metadata <- complete_cases %>% select(all_of(metadata_cols))
   ground_truth_labels <- factor(testing_metadata[[target_col]])
-  
+
   # Make predictions
   output <- predict(RF_model, data = numeric_testing_data)
-  predictions <- output$predictions
-  predictions_df <- cbind(testing_metadata, predictions)
+  probabilities <- output$predictions # matrix: rows = samples, cols = classes
+  predicted_classes <- factor(colnames(probabilities)[max.col(probabilities, ties.method = "first")],
+                              levels = colnames(probabilities))
+  
+  predictions_df <- cbind(testing_metadata, predictions = predicted_classes)
   predictions_df <- predictions_df %>% rename(true_class = all_of(target_col))
   
   metrics <- compute_metrics(predicted_classes = as.factor(predictions_df$predictions), 
                              ground_truth_labels = as.factor(predictions_df$true_class),
-                             type = type)
+                             type = type,
+                             probabilities = probabilities)
   
   return(metrics)
 }

@@ -1,7 +1,7 @@
 # Main script for data boosting chapter -----------------------------------
 
 # Set up ------------------------------------------------------------------
-# setwd("C:/Users/oaw001/OneDrive - University of the Sunshine Coast/DataBoosting")
+# setwd("C:/Users/oaw001/OneDrive - University of the Sunshine Coast/04.DataBoosting")
 setwd("C:/Users/PC/OneDrive - University of the Sunshine Coast/04.DataBoosting")
 source("Scripts/config.R") # file with all the config infomation for the analysis
 
@@ -48,7 +48,7 @@ for (species in all_species){
                               priority_classes = "target") 
   
   for (method in boost_methods){
-    # method <- "DTW"
+    # method <- "Nothing"
     print(method)
     for (i in 1:3){
       print(i)
@@ -68,7 +68,7 @@ for (species in all_species){
                                           path_to_features = file.path(data_path, "Nothing_Feature_data.csv"), 
                                           test_ids = test_IDs)
       
-      # build a model with the boosted training data
+      # build a model with the boosted training data (optimises for AUC_PR of minority class)
       RF_model <- design_build_RF(boosted_data, type, metadata_cols)  
       
       # test this boosted model on the unchanged test data
@@ -93,18 +93,18 @@ results_df <- lapply(result_files, function(x){
   dat$Behaviour <- gsub("Class: ", "", dat$Behaviour)
   dat
 })
-result_df <- rbindlist(results_df)
+result_df <- rbindlist(results_df, fill = TRUE)
 
 result_df$method <- factor(result_df$method, levels = c(
-  "Nothing", "Overlap50", "Overlap90", "Oversample", "SMOTE", "ADSYN", "RandomNoise"
+  "Nothing", "Overlap50", "Overlap90", "Oversample", "SMOTE", "ADSYN", "RandomNoise", "DTW"
 ))
 
 summary_df <- result_df %>%
   group_by(Species, Behaviour, method) %>%
   summarise(
     n = n(),
-    mean = mean(F1, na.rm = TRUE),
-    se = sd(F1, na.rm = TRUE) / sqrt(n),
+    mean = mean(AUC_PR, na.rm = TRUE),
+    se = sd(AUC_PR, na.rm = TRUE) / sqrt(n),
     ci = 1.96 * se, # gives us the confidence intervals (I think??)
     .groups = "drop"
   )
@@ -118,7 +118,7 @@ ggplot(summary_df,
                     ymax = mean + ci),
                 width = 0.5) +
   labs(x = "Boosting Method",
-       y = "Mean F1",
+       y = "Mean AUC-PR",
        colour = "Behaviour") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none") + 

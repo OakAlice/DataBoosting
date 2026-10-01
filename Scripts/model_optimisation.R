@@ -56,7 +56,8 @@ design_build_RF <- function(data, type, metadata_cols){
     num.trees = best_number_trees,
     mtry = best_mtry,
     max.depth = best_max_depth,
-    classification = TRUE
+    classification = TRUE,
+    probability = TRUE
   ) 
   
   if(method == "Weighted"){
@@ -73,7 +74,8 @@ design_build_RF <- function(data, type, metadata_cols){
       mtry = best_mtry,
       max.depth = best_max_depth,
       classification = TRUE,
-      case.weights = weight
+      case.weights = weight,
+      probability = TRUE
     )
   }
   
@@ -111,7 +113,7 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
     
     clean_cols <- removeBadFeatures(feature_data, var_threshold = 0.3, corr_threshold = 0.9)
     clean_feature_data <- feature_data %>%
-      select(c(!!!syms(clean_cols), metadata_cols)) %>% 
+      select(c(!!!syms(clean_cols), any_of(metadata_cols))) %>% 
       na.omit()
           
     if (mtry > length(clean_cols)-1){
@@ -142,21 +144,8 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
           validation_data <- clean_feature_data %>% dplyr::filter(ID %in% val_IDs)
           training_data <- clean_feature_data %>% dplyr::filter(!ID %in% val_IDs)                      
           
-          training_data <- training_data %>%
-            select(-c(ID, Time)) %>%
-            mutate(Activity = as.factor(Activity))
-          
-          validation_data <- validation_data %>%
-            select(-c(ID, Time)) %>%
-            mutate(Activity = as.factor(Activity))
-          
-          # stage <- "split"
-          # # debugging statements so I can see why it fails
-          # dbg("rep", i, "| train:", nrow(training_data), "val:", nrow(validation_data))
-          # dbg("train classes:", paste(names(table(training_data$Activity)),
-          #                             table(training_data$Activity), sep = "=", collapse = " "))
-          # dbg("val classes:  ", paste(names(table(validation_data$Activity)),
-          #                             table(validation_data$Activity), sep = "=", collapse = " "))
+          training_data <- training_data %>% select(-c(ID, Time)) %>% mutate(Activity = as.factor(Activity))
+          validation_data <- validation_data %>% select(-c(ID, Time)) %>%  mutate(Activity = as.factor(Activity))
           
         }, error = function(e) {
           message("Error in data splitting: ", e$message)
@@ -173,7 +162,7 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
         
         # this is added in to prevent the sample fraction too small error
         if (nrow(training_data) < 10 || nlevels(training_data$Activity) < 2) {
-          stop("Training fold unusable, need to skip")
+          next("Training fold unusable, need to skip")
         }
         
         RF_model <- ranger(
@@ -185,7 +174,8 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
           sample.fraction = 1, # select all the data (small datasets will fail otherwise)
           classification = TRUE,
           importance = "impurity",
-          case.weights = weight
+          case.weights = weight,
+          probability = TRUE # generates probabilities - required for AUC-PR etc.
         )
   
       }, error = function(e) {
@@ -197,10 +187,17 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
       tryCatch({
         numeric_validation_data <- as.matrix(validation_data[, !names(validation_data) %in% c("Activity"), with = FALSE])
         ground_truth_labels <- validation_data$Activity
+        testing_metadata <- validation_data %>% select(any_of(metadata_cols))
         numeric_validation_data <- as.data.frame(numeric_validation_data)
         predictions <- predict(RF_model, data = numeric_validation_data)
-        predicted_classes <- predictions$predictions
-  
+        
+        probabilities <- predictions$predictions # matrix: rows = samples, cols = classes
+        predicted_classes <- factor(colnames(probabilities)[max.col(probabilities, ties.method = "first")],
+                                    levels = colnames(probabilities))
+        
+        predictions_df <- cbind(testing_metadata, predictions = predicted_classes)
+        predictions_df <- predictions_df %>% rename(true_class = all_of(target_col))
+        
       }, error = function(e) {
         message("Error in making predictions: ", e$message)
         flush.console()
@@ -208,16 +205,20 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
       })
       
       tryCatch({
-        metrics <- compute_metrics(predicted_classes, ground_truth_labels, type = type)
+        metrics <- compute_metrics(predicted_classes = predictions_df$predictions,
+                                   ground_truth_labels = as.factor(predictions_df$true_class),
+                                   type = type,
+                                   probabilities = probabilities)
+        
       }, error = function(e) {
         message("Error in computing metrics: ", e$message)
         flush.console()
         stop()
       })
       
-      
       # Store the F1 score
-      f1_scores[[i]] <- metrics$metrics$F1 + runif(1, 0, 1e-6) # jitter to prevent convergence
+      # NOTE: I changed it to the AUC_PR for the minority detection task
+      f1_scores[[i]] <- metrics$metrics$AUC_PR + runif(1, 0, 1e-6) # jitter to prevent convergence
     }
     
     #### Calculate average F1-scors

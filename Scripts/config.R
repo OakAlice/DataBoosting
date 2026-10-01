@@ -25,13 +25,13 @@ set.seed(1000)
 
 settings <- fread("Data/DatasetCharacteristics.csv")
 
-boost_methods <- c(#"Nothing", 
+boost_methods <- c("Nothing", 
                    #"Oversample", 
-                   # "Overlap50"
+                   "Overlap50",
                    # "Overlap90", 
-                   # "SMOTE",
+                   "SMOTE",
                    # "ADSYN",
-                   "DTW",
+                   # "DTW",
                    "RandomNoise"
                    # "Rotation",
                    # "Decomposition",
@@ -41,6 +41,7 @@ boost_methods <- c(#"Nothing",
 # all_species <- basename(list.dirs("Data", recursive = F))
 all_species <- c("Studd_Squirrel", "Ladds_Seal", "Dunford_Cat", "HarveyCaroll_Pangolin", "Yu_Duck", "Sparkes_Koala")
 
+available_axes <- c("X", "Y", "Z")
 metadata_cols <- c("Activity", "ID", "Time")
 target_col <- "Activity"
 type <- "binary"
