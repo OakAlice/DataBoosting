@@ -117,7 +117,7 @@ noise_minority <- function(training_data, metadata_cols, target_col, minority_cl
   return (boosted_data)
 }
 
-DTW_minority <- function(raw_data, target_col, minority_classes, Hz, window_s, n_avg = 3) {
+DTW_minority <- function(raw_data, feature_data, target_col, minority_classes, Hz, window_s, n_avg = 3) {
   
   axis_cols <- c("X", "Y", "Z") # hardcoded because I am a sloppy ugly coder. also a chud.
   
@@ -213,6 +213,7 @@ overlap_minority <- function(raw_data, sample_rate, metadata_cols, target_col, m
   
   # Generate features
   features <- lapply(raw_windows, function(window) {
+    
     process_features_per_chunk(
       as.data.table(window),
       features_type = c("timeseries", "statistical"),
@@ -229,8 +230,9 @@ overlap_minority <- function(raw_data, sample_rate, metadata_cols, target_col, m
 
 
 # main wrapper ------------------------------------------------------------
-boost_training_data <- function(training_data, metadata_cols, target_col, minority_classes, method, Hz = NULL, path_to_features = NULL, test_ids = NULL){
+boost_training_data <- function(training_data, metadata_cols, target_col, minority_classes, method, Hz = NULL, prior_features = NULL){
   #' Function for boosting the minority representation in the training data... I hate this code, so ugly.
+  #' Requires input of the raw data and the feature data fml...
   #' training_data: dataframe of training feature data
   #' metadata_cols: string list of the metadata columns
   #' taget_col: string name of the target column
@@ -239,35 +241,22 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
   #' Hz: frequency of the sampling 
   #' path_to_features: In case these have already been generated, saves a lot of time. Ugly tho.
   
-  # bring in the original features if they exist
-  if (file.exists(path_to_features)){
-    print("reading in the original features")
-    feature_data <- fread(path_to_features)
-    feature_data <- feature_data %>% dplyr::filter(!ID %in% test_IDs)
-  } else {
-    feature_data <- generate_features_master(training_data, 
-                                              sample_rate = Hz, 
-                                              overlap_setting = 0, 
-                                              window_setting = ifelse(Hz > 1, 2, 5))
-    fwrite(feature_data, path_to_features)
-  }
-  
   if (method == "Nothing"){
     # just give this back to us
-    boosted_data <- feature_data
+    boosted_data <- prior_features
     
   } else if (method == "Oversample"){
-    target_n <- round(mean(table(feature_data[[target_col]])))
-    boosted_data <- oversample_minority(feature_data, target_col, minority_classes, target_n)
+    target_n <- round(mean(table(prior_features[[target_col]])))
+    boosted_data <- oversample_minority(prior_features, target_col, minority_classes, target_n)
     
   } else if (method == "SMOTE"){
-    boosted_data <- smote_minority(feature_data, smote_method = "SMOTE", metadata_cols, minority_classes)
+    boosted_data <- smote_minority(prior_features, smote_method = "SMOTE", metadata_cols, minority_classes)
     
   } else if (method == "ADSYN") {
-    boosted_data <- smote_minority(feature_data, smote_method = "ADSYN", metadata_cols, minority_classes)
+    boosted_data <- smote_minority(prior_features, smote_method = "ADSYN", metadata_cols, minority_classes)
     
   } else if (method == "RandomNoise"){
-    boosted_data <- noise_minority(feature_data, metadata_cols, target_col, minority_classes)
+    boosted_data <- noise_minority(prior_features, metadata_cols, target_col, minority_classes)
   
   } else if (grepl("Overlap", method, fixed = TRUE)){
     # overlap by the percentage defined in the string name
@@ -275,26 +264,20 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
 
     overlap_percent <- as.numeric(gsub("Overlap", "", method))
   
-    if (file.exists(file.path("Data", species, paste0("Overlap", overlap_percent, "_Feature_data.csv")))){
-      boosted_data <- fread(file.path("Data", species, paste0("Overlap", overlap_percent, "_Feature_data.csv")))
-    } else {
-      raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
-      boost <- overlap_minority(raw_data, sample_rate = Hz, metadata_cols, target_col, minority_classes, overlap_percent)
-      boosted_data <- unique(rbind(boost, feature_data)) # this will also remove any possible duplicates
-      
-      fwrite(boosted_data, file.path("Data", species, paste0("Overlap", overlap_percent, "_Feature_data.csv")))
-    }
+    raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
+    boost <- overlap_minority(raw_data, sample_rate = Hz, metadata_cols, target_col, minority_classes, overlap_percent)
+    boosted_data <- unique(rbind(boost, prior_features)) # this will also remove any possible duplicates
 
   } else if (method == "DTW") {
     already_done <- file.path(data_path, paste0("DTW_", i, "_features.csv"))
     
     if(!file.exists(already_done)){
       raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
-      synth_features <- DTW_minority(raw_data, target_col, minority_classes,
+      synth_features <- DTW_minority(raw_data, prior_features, target_col, minority_classes,
                                Hz, window_s = ifelse(Hz > 1, 2, 5), n_avg = 3)
       synth_features <- synth_features %>% mutate(Time = "NA")
-      feature_data <- feature_data %>% mutate(Time = "NA")
-      boosted_data <- bind_rows(feature_data, synth_features)
+      prior_features <- prior_features %>% mutate(Time = "NA")
+      boosted_data <- bind_rows(prior_features, synth_features)
       
       # save this (was quite time consuming I guess)
       fwrite(boosted_data, file.path(data_path, paste0("DTW_", i, "_features.csv")))

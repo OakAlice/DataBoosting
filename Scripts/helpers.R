@@ -42,10 +42,9 @@ make_ID_groups <- function(feature_data, target_col = "Activity", k = 3,
   data.frame(ID = names(group), group = as.integer(group), row.names = NULL)
 }
 
-dbg_file <- "rf_debug.log"
-dbg <- function(...) {
-  line <- paste0(format(Sys.time(), "%H:%M:%S"), " | ", paste(..., collapse = " "))
-  cat(line, "\n", file = dbg_file, append = TRUE)   # survives crashes
-  cat(line, "\n", file = stderr())
-  flush.console()
+cached <- function(path, compute) {
+  if (file.exists(path)) return(fread(path))
+  out <- compute()
+  fwrite(out, path)
+  out
 }

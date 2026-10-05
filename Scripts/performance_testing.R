@@ -1,37 +1,5 @@
 # Function for testing performance ----------------------------------------
 
-# Plot of confusion matric ------------------------------------------------
-generate_confusion_plot <- function(conf_matrix_padded, save_path) {
-  
-  # Extracting confusion matrix data and reshaping it
-  conf_matrix_df <- as.data.frame(as.table(conf_matrix_padded))
-  colnames(conf_matrix_df) <- c("Predicted", "Actual", "Count")
-  
-  # Repeat rows based on the Count column (i.e., add multiple rows for each count)
-  conf_matrix_df_repeated <- conf_matrix_df[rep(1:nrow(conf_matrix_df), conf_matrix_df$Count), ]
-  
-  # Create a new column to classify the points as True Positive, False Positive, etc.
-  conf_matrix_df_repeated$Type <- "Other"
-  conf_matrix_df_repeated$Type[conf_matrix_df_repeated$Predicted == conf_matrix_df_repeated$Actual] <- "True Positive"
-  conf_matrix_df_repeated$Type[conf_matrix_df_repeated$Predicted != conf_matrix_df_repeated$Actual] <- "False Positive"
-  
-  # Assign colors based on classification type
-  conf_matrix_df_repeated$Color <- ifelse(conf_matrix_df_repeated$Type == "True Positive", "blue", "red")
-  
-  # Plotting with jitter
-  confusion_plot <- ggplot(conf_matrix_df_repeated, aes(x = Predicted, y = Actual, color = Color)) +
-    geom_jitter(width = 0.1, height = 0.1, alpha = 0.3, size = 2) +  # Add jitter with fixed point size
-    scale_color_manual(values = c("blue", "red")) +
-    labs(x = "Predicted Class", 
-         y = "Actual Class") +
-    theme_minimal() +
-    theme(legend.position = "bottom")
-  
-  # Save the plot to a PDF
-  ggsave(save_path,
-         plot = confusion_plot, width = 16, height = 8)
-}
-
 # Function to compute confusion matrix metrics (+ AUC-ROC / AUC-PR if probabilities supplied)
 # probabilities: multiclass -> matrix/data.frame of class probabilities, colnames = class labels
 #                binary     -> numeric vector of P("target"), or a matrix with a "target" column
@@ -149,6 +117,12 @@ test_model <- function(type, model, test_data, metadata_cols, target_col){
     select(all_of(c(feat_cols, metadata_cols))) %>%
     na.omit()
   
+  # just check that this hasnt happened
+  if (nrow(complete_cases) < 1) {
+    warning("No complete cases in test data")
+    return(NULL)
+  }
+  
   # extract the components I need
   numeric_testing_data <- complete_cases %>%
     select(all_of(feat_cols)) %>%
@@ -158,7 +132,7 @@ test_model <- function(type, model, test_data, metadata_cols, target_col){
   ground_truth_labels <- factor(testing_metadata[[target_col]])
 
   # Make predictions
-  output <- predict(RF_model, data = numeric_testing_data)
+  output <- predict(model, data = numeric_testing_data)
   probabilities <- output$predictions # matrix: rows = samples, cols = classes
   predicted_classes <- factor(colnames(probabilities)[max.col(probabilities, ties.method = "first")],
                               levels = colnames(probabilities))

@@ -60,24 +60,24 @@ design_build_RF <- function(data, type, metadata_cols){
     probability = TRUE
   ) 
   
-  if(method == "Weighted"){
-    # weight by class frequency
-    class_freq <- table(training_data$Activity)
-    class_weights <- 1 / class_freq
-    class_weights <- class_weights / sum(class_weights)
-    weight <- class_weights[training_data$Activity]
-    
-    RF_model <- ranger(
-      dependent.variable.name = "Activity",
-      data = training_data,
-      num.trees = best_number_trees,
-      mtry = best_mtry,
-      max.depth = best_max_depth,
-      classification = TRUE,
-      case.weights = weight,
-      probability = TRUE
-    )
-  }
+  # if(method == "Weighted"){
+  #   # weight by class frequency
+  #   class_freq <- table(training_data$Activity)
+  #   class_weights <- 1 / class_freq
+  #   class_weights <- class_weights / sum(class_weights)
+  #   weight <- class_weights[training_data$Activity]
+  #   
+  #   RF_model <- ranger(
+  #     dependent.variable.name = "Activity",
+  #     data = training_data,
+  #     num.trees = best_number_trees,
+  #     mtry = best_mtry,
+  #     max.depth = best_max_depth,
+  #     classification = TRUE,
+  #     case.weights = weight,
+  #     probability = TRUE
+  #   )
+  # }
   
   return(RF_model)   
 }

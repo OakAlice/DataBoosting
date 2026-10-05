@@ -5,85 +5,20 @@
 setwd("C:/Users/PC/OneDrive - University of the Sunshine Coast/04.DataBoosting")
 source("Scripts/config.R") # file with all the config infomation for the analysis
 
+# this will generate all the results
+for (species in all_species) run_species(species, settings, boost_methods, k = 3)
 
-# Running over each of the datasets ---------------------------------------
-for (species in all_species){
-  
-  # species <- "Studd_Squirrel"
-  
-  # create the save paths 
-  data_path <- file.path("Data", species)
-  output_path <- file.path("Output", species)
-  
-  # relabel the data to binary (target vs other)
-  if (!file.exists(file.path(data_path, "Relabelled_raw_data.csv"))){
-    # Generate the base features
-    raw_data <- fread(file.path(data_path, "Formatted_raw_data.csv"))
-    
-    # select the minority class that I want to investigate...
-    target <- settings$minorityTarget[settings$species == species]
-    raw_data$Activity <- ifelse(raw_data$Activity == target, "target", "other")
-    # and save this again
-    fwrite(raw_data, file.path(data_path, "Relabelled_raw_data.csv"))
-  } else {
-    print("already relabelled")
-    raw_data <- fread(file.path(data_path, "Relabelled_raw_data.csv"))
-  }
 
-  # now make the features # this has to happpen here for the test data to exist
-  if (file.exists(file.path(data_path, "Nothing_Feature_data.csv"))){
-    print("basic features already generated")
-    feature_data <- fread(file.path(data_path, "Nothing_Feature_data.csv"))
-  } else { 
-    generated_features_df <- generate_features_master(data1, 
-                                                      sample_rate = settings$Hz[settings$species == species], 
-                                                      overlap_setting = 0, 
-                                                      window_setting = ifelse(settings$Hz[settings$species == species] > 1, 2, 5))
-    fwrite(generated_features_df, file.path(data_path, "Nothing_Feature_data.csv"))
-    feature_data <- generated_features_df
-  }
-  
-  # repeating the entire process 3 times, so need to split out the test data
-  ID_groups <- make_ID_groups(feature_data, target_col = target_col, k = 3,
-                              priority_classes = "target") 
-  
-  for (method in boost_methods){
-    # method <- "Nothing"
-    print(method)
-    for (i in 1:3){
-      print(i)
-      # define the test IDs for this round and subset out the data
-      test_IDs <- ID_groups$ID[ID_groups$group == i]
-      test_data <- feature_data %>% dplyr::filter(ID %in% test_IDs)
-      
-      # now boost the training samples
-      training_data <- raw_data %>% dplyr::filter(!ID %in% test_IDs)
-      boosted_data <- boost_training_data(training_data, 
-                                          metadata_cols, 
-                                          target_col, 
-                                          minority_classes = c("target"), 
-                                          method, 
-                                          Hz = settings$Hz[settings$species == species], 
-                                          # next things are if the base features have already been ganeerated
-                                          path_to_features = file.path(data_path, "Nothing_Feature_data.csv"), 
-                                          test_ids = test_IDs)
-      
-      # build a model with the boosted training data (optimises for AUC_PR of minority class)
-      RF_model <- design_build_RF(boosted_data, type, metadata_cols)  
-      
-      # test this boosted model on the unchanged test data
-      metrics <- test_model(type = "binary", RF_model, test_data, metadata_cols, target_col)
-      
-      # save the performance output
-      fwrite(metrics$metrics, file.path("Output", species, paste0(method, "_performance_", i, ".csv")))
-      
-    }
-  }
-}
+
+
+# make plots
+plot <- plot_boosted_data(boosted, 
+                          metadata_cols, 
+                          n_neighbors = 15, min_dist = 0.1, seed = 42)
+
 
 # Analysis ----------------------------------------------------------------
 # just very basic for now
-# collect all the results together
 result_files <- list.files("Output", pattern = "_performance_", recursive = TRUE, full.names = TRUE)
 results_df <- lapply(result_files, function(x){
   dat <- fread(x)
@@ -96,13 +31,14 @@ results_df <- lapply(result_files, function(x){
 result_df <- rbindlist(results_df, fill = TRUE)
 
 result_df$method <- factor(result_df$method, levels = c(
-  "Nothing", "Overlap50", "Overlap90", "Oversample", "SMOTE", "ADSYN", "RandomNoise", "DTW"
+  "Nothing", "Oversample","Overlap50", "Overlap90", "RandomNoise", "SMOTE", "ADSYN",  "DTW"
 ))
 
 summary_df <- result_df %>%
   group_by(Species, Behaviour, method) %>%
   summarise(
     n = n(),
+    chance = mean(Prevalence, na.rm = TRUE),
     mean = mean(AUC_PR, na.rm = TRUE),
     se = sd(AUC_PR, na.rm = TRUE) / sqrt(n),
     ci = 1.96 * se, # gives us the confidence intervals (I think??)
@@ -112,17 +48,20 @@ summary_df <- result_df %>%
 ggplot(summary_df,
        aes(x = method,
            y = mean,
-           colour = Behaviour)) +
-  geom_point(size = 3) +
+           colour = method,
+           group = Species)) +
+  geom_point(size = 5) +
   geom_errorbar(aes(ymin = mean - ci,
                     ymax = mean + ci),
+                linewidth = 1,
                 width = 0.5) +
+  geom_hline(data = summary_df, aes(yintercept = chance),
+             linetype = "dashed", colour = "grey30", alpha = 0.7) +
   labs(x = "Boosting Method",
-       y = "Mean AUC-PR",
-       colour = "Behaviour") +
+       y = "Mean AUC-PR") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none") + 
   my_theme() + 
-  scale_colour_manual(values = more_colours) +
+  scale_colour_manual(values = fave_colours) +
   facet_wrap(~Species, ncol = 3)
 

@@ -10,15 +10,19 @@ pacman::p_load(
   rBayesianOptimization,
   ranger,
   smotefamily,
-  dtwclust
+  dtwclust,
+  matrixStats,
+  uwot
 )
 
 # Functions
 source("Scripts/helpers.R")
+source("Scripts/run_experiment.R")
 source("Scripts/generate_features.R")
 source("Scripts/boost_training_data.R")
 source("Scripts/model_optimisation.R")
 source("Scripts/performance_testing.R")
+source("Scripts/visualise_features.R")
 
 # variables
 set.seed(1000)
@@ -26,11 +30,11 @@ set.seed(1000)
 settings <- fread("Data/DatasetCharacteristics.csv")
 
 boost_methods <- c("Nothing", 
-                   #"Oversample", 
+                   "Oversample", 
                    "Overlap50",
                    # "Overlap90", 
                    "SMOTE",
-                   # "ADSYN",
+                   "ADSYN",
                    # "DTW",
                    "RandomNoise"
                    # "Rotation",
@@ -38,8 +42,7 @@ boost_methods <- c("Nothing",
                    # "GAN"
 )
 
-# all_species <- basename(list.dirs("Data", recursive = F))
-all_species <- c("Studd_Squirrel", "Ladds_Seal", "Dunford_Cat", "HarveyCaroll_Pangolin", "Yu_Duck", "Sparkes_Koala")
+all_species <- basename(list.dirs("Data", recursive = F))
 
 available_axes <- c("X", "Y", "Z")
 metadata_cols <- c("Activity", "ID", "Time")
@@ -50,20 +53,11 @@ type <- "binary"
 # for each of the defined species check data exists and create an output folder
 lapply(all_species, function(species){
   
-  # check whether the data exists
-  
-    # code here
-  
   # create the output directory
   if (!dir.exists(paste0("Output/", species))){
     dir.create(paste0("Output/", species))
   }
-  
-  # and within that, a subfolder for the boosted data samples
-  # if(!dir.exists(file.path("Output", species, "Boost"))){
-  #   dir.create(file.path("Output", species, "Boost"))
-  # }
-  
+
   print("all good")
 })
 

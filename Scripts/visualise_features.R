@@ -1,52 +1,40 @@
 # Visulising the featue space with and without synthetic data -------------
 # To understand why my methods are/aren't working, I need to visualise them in feature space.
 
-if(file.exists(file.path("Data", species, paste0(method, "_", i, "_Feature_data.csv")))){
+plot_boosted_data <- function(boosted, metadata_cols = c("ID", "Time"),
+                              n_neighbors = 15, min_dist = 0.1, seed = 1000) {
   
-  data <- fread(file.path("Data", species, paste0(method, "_", i, "_Feature_data.csv")))
-
-  # Select only numeric feature columns (exclude Activity, ID, Time) and scale them
-  feature_cols <- setdiff(names(data), c("Activity", "ID", "Time"))
-  features     <- data[, ..feature_cols]  
-  scaled <- scale(features)
+  boosted   <- as.data.frame(boosted)
+ 
+  # shared numeric features only
+  feat_cols <- intersect(names(boosted))
+  feat_cols <- setdiff(feat_cols, metadata_cols)
+  feat_cols <- feat_cols[vapply(boosted[feat_cols], is.numeric, logical(1)) &
+                           vapply(test_data[feat_cols], is.numeric, logical(1))]
   
-  # reduce dimensionalirty for plotting
-  pca  <- prcomp(scaled, center = FALSE, scale. = FALSE)
-  pca_df <- as.data.frame(pca$x[, 1:3])
-  pca_df$Activity <- data$Activity
-  pca_df$ID <- data$ID
+  # drop zero-variance features, then NA rows
+  keep <- vapply(boosted[feat_cols], function(x) sd(x, na.rm = TRUE) > 0, logical(1))
+  feat_cols <- feat_cols[keep %in% TRUE]
   
-  # split the data
-  real_df  <- pca_df %>% dplyr::filter(ID != "Synth")
-  synth_df <- pca_df %>% dplyr::filter(ID == "Synth")
+  boosted   <- boosted[complete.cases(boosted[feat_cols]), ]
   
-  # Variance explained
-  var_exp <- round(summary(pca)$importance[2, 1:3] * 100, 1)
   
-  # plot it in 2d
-  p_activity <- ggplot() +
-    geom_point(
-      data = pca_df %>% dplyr::filter(ID != "Synth"),
-      aes(PC1, PC2, colour = ID),
-      size = 2.2, alpha = 0.75
-    ) +
-    geom_point(
-      data = pca_df %>% dplyr::filter(ID == "Synth"),
-      aes(PC1, PC2),
-      colour = "black", shape = 8, size = 1, alpha = 0.5
-    ) +
-    labs(
-      x = paste0("PC1 (", var_exp[1], "%)"),
-      y = paste0("PC2 (", var_exp[2], "%)"),
-      colour = "ID"
-    ) +
-    my_theme() +
-    theme(legend.position = "right", panel.grid.minor = element_blank()) +
-    facet_wrap(~Activity)
+  set.seed(seed)
+  um <- umap(Xb, n_neighbors = n_neighbors, min_dist = min_dist, ret_model = TRUE)
+  emb_b <- um$embedding
+  emb_t <- umap_transform(Xt, um)
   
-  ggsave(file.path("Output", species, paste0(method, "_", i, "_Feature_PCA_plot.png")),
-         p_activity,
-         bg = "white")
-
+  df_b <- data.frame(UMAP1 = emb_b[, 1], UMAP2 = emb_b[, 2], ID = as.character(boosted$ID))
+  
+  Synth <- df_b %>% dplyr::filter(ID == "Synth")
+  Real <- df_b %>% dplyr::filter(!ID == "Synth")
+  
+  ggplot() +
+    geom_point(data = Real, aes(UMAP1, UMAP2, colour = ID), size = 1, alpha = 0.5) +
+    geom_point(data = Synth, aes(UMAP1, UMAP2), shape = 8,
+               colour = "black", size = 1.8, stroke = 0.5, alpha = 0.25) +
+    labs(colour = "Train ID") +
+    scale_colour_manual(values = fave_colours)+
+    my_theme()
 }
 
