@@ -26,16 +26,13 @@ oversample_minority <- function(feature_data, target_col, minority_classes, targ
   boosted_data <- feature_data %>%
     group_by(across(all_of(target_col))) %>%
     group_modify(~ {
-      cls <- .y[[target_col]]
+      cls       <- .y[[target_col]]
       n_current <- nrow(.x)
       
       if (cls %in% minority_classes && n_current < target_n) {
-        bind_rows(
-          .x,
-          slice_sample(.x, n = target_n - n_current, replace = TRUE)
-        )
+        slice_sample(.x, n = target_n - n_current, replace = TRUE)
       } else {
-        .x
+        .x[0, ]   # zero rows, same columns
       }
     }) %>%
     ungroup()
@@ -72,14 +69,10 @@ smote_minority <- function(training_data, smote_method, metadata_cols, minority_
   if (nrow(synth_data) == 0) return(NULL)
   
   synth_data <- synth_data %>%
-    slice_sample(n = min(n_needed, nrow(synth_data))) %>%
     rename(!!target_col := class) %>%
     mutate(ID = "Synth", Time = NA)
   
-  # combine synthetic data with the original
-  boosted_data <- rbind(training_data, synth_data)
-  
-  return (boosted_data)
+  return (synth_data)
 }
 
 noise_minority <- function(training_data, metadata_cols, target_col, minority_classes, sigma_frac = 0.1) {
@@ -113,7 +106,7 @@ noise_minority <- function(training_data, metadata_cols, target_col, minority_cl
     out
   })
   
-  boosted_data <- bind_rows(training_data, bind_rows(synth_list))
+  boosted_data <- bind_rows(synth_list)
   return (boosted_data)
 }
 
@@ -243,20 +236,20 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
   
   if (method == "Nothing"){
     # just give this back to us
-    boosted_data <- prior_features
+    synth_features <- prior_features
     
   } else if (method == "Oversample"){
     target_n <- round(mean(table(prior_features[[target_col]])))
-    boosted_data <- oversample_minority(prior_features, target_col, minority_classes, target_n)
+    synth_features <- oversample_minority(prior_features, target_col, minority_classes, target_n)
     
   } else if (method == "SMOTE"){
-    boosted_data <- smote_minority(prior_features, smote_method = "SMOTE", metadata_cols, minority_classes)
+    synth_features <- smote_minority(training_data = prior_features, smote_method = "SMOTE", metadata_cols, minority_classes)
     
   } else if (method == "ADSYN") {
-    boosted_data <- smote_minority(prior_features, smote_method = "ADSYN", metadata_cols, minority_classes)
+    synth_features <- smote_minority(prior_features, smote_method = "ADSYN", metadata_cols, minority_classes)
     
   } else if (method == "RandomNoise"){
-    boosted_data <- noise_minority(prior_features, metadata_cols, target_col, minority_classes)
+    synth_features <- noise_minority(prior_features, metadata_cols, target_col, minority_classes)
   
   } else if (grepl("Overlap", method, fixed = TRUE)){
     # overlap by the percentage defined in the string name
@@ -265,33 +258,21 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
     overlap_percent <- as.numeric(gsub("Overlap", "", method))
   
     raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
-    boost <- overlap_minority(raw_data, sample_rate = Hz, metadata_cols, target_col, minority_classes, overlap_percent)
-    boosted_data <- unique(rbind(boost, prior_features)) # this will also remove any possible duplicates
+    synth_features <- overlap_minority(raw_data, sample_rate = Hz, metadata_cols, target_col, minority_classes, overlap_percent)
 
   } else if (method == "DTW") {
-    already_done <- file.path(data_path, paste0("DTW_", i, "_features.csv"))
-    
-    if(!file.exists(already_done)){
-      raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
-      synth_features <- DTW_minority(raw_data, prior_features, target_col, minority_classes,
-                               Hz, window_s = ifelse(Hz > 1, 2, 5), n_avg = 3)
-      synth_features <- synth_features %>% mutate(Time = "NA")
-      prior_features <- prior_features %>% mutate(Time = "NA")
-      boosted_data <- bind_rows(prior_features, synth_features)
-      
-      # save this (was quite time consuming I guess)
-      fwrite(boosted_data, file.path(data_path, paste0("DTW_", i, "_features.csv")))
-      
-    } else {
-      boosted_data <- fread(file.path(data_path, paste0("DTW_", i, "_features.csv")))
-    }
+    raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
+    synth_features <- DTW_minority(raw_data, prior_features, target_col, minority_classes,
+                             Hz, window_s = ifelse(Hz > 1, 2, 5), n_avg = 3)
+    synth_features <- synth_features %>% mutate(Time = "NA")
                               
   } else {
     print("unsure what this method is. Please choose from defined list of options.")
   }
   
+  boosted_data <- unique(rbindlist(list(synth_features, prior_features),
+                                   use.names = TRUE, fill = TRUE)) # this will also remove any possible duplicates
   
-  
-  
-  return (boosted_data)
+  return (list(boosted_data = boosted_data,
+               synth_features = synth_features))
 }

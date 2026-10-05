@@ -5,16 +5,55 @@
 setwd("C:/Users/PC/OneDrive - University of the Sunshine Coast/04.DataBoosting")
 source("Scripts/config.R") # file with all the config infomation for the analysis
 
-# this will generate all the results
+
+all_species <- "Dunford_Cat"
+species <- "Dunford_Cat"
+boost_methods <- c("SMOTE", "ADSYN", "RandomNoise", "Oversample")
+
+
+# All trials --------------------------------------------------------------
 for (species in all_species) run_species(species, settings, boost_methods, k = 3)
+# everything saved to the data and output folders
 
 
+# Generate synthetic data -------------------------------------------------
+grid <- expand.grid(method = boost_methods, species = all_species, stringsAsFactors = FALSE)
+for (j in seq_len(nrow(grid))) {
+  message(grid$species[j], " | ", grid$method[j])
+  
+  raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
+  feature_data <- fread(file.path("Data", species, "Nothing_Feature_data.csv"))
+  
+  boosted <- boost_training_data(
+    raw_data,
+    metadata_cols = c("ID", "Time", "Activity"), 
+    target_col = "Activity",
+    minority_classes = "target",
+    method           = grid$method[j],
+    Hz               = cfg$Hz,
+    prior_features   = feature_data
+  )
+    
+  synth <- boosted$synth_features
+  fwrite(synth, file.path("Data", species, "Boost", paste0(species, "_", grid$method[j], ".csv")))
+}
 
 
-# make plots
-plot <- plot_boosted_data(boosted, 
-                          metadata_cols, 
-                          n_neighbors = 15, min_dist = 0.1, seed = 42)
+# Plots -------------------------------------------------------------------
+feature_data <- fread(file.path("Data", species, "Nothing_Feature_data.csv"))
+synths  <- list.files(file.path("Data", species, "Boost"), full.names = TRUE)
+boosted <- lapply(synths, fread)
+names(boosted) <- word(basename(tools::file_path_sans_ext(synths)), 3, sep = "_")
+
+p <- plot_boosted_facets(feature_data, boosted,
+                      target_col = "Activity",
+                      metadata_cols = c("ID", "Time", "Activity", "Method"),
+                      n_neighbors = 15, min_dist = 0.1, seed = 1000,
+                      ncol = 3)
+
+ggsave(file.path("Output", species, "Figures", paste0(species, "_vis.png")), 
+       p, width = 18, height = 11, dpi = 300)
+
 
 
 # Analysis ----------------------------------------------------------------

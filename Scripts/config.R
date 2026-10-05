@@ -57,6 +57,16 @@ lapply(all_species, function(species){
   if (!dir.exists(paste0("Output/", species))){
     dir.create(paste0("Output/", species))
   }
+  
+  # create where I save the synthetic data
+  if (!dir.exists(paste0("Data/", species, "/Boost"))){
+    dir.create(paste0("Data/", species, "/Boost"))
+  }
+  
+  # and the figures
+  if (!dir.exists(paste0("Output/", species, "/Figures"))){
+    dir.create(paste0("Output/", species, "/Figures"))
+  }
 
   print("all good")
 })
@@ -78,8 +88,8 @@ my_theme <- function() {
     )
 }
 fave_colours <- c(
-  "coral", "goldenrod2", "khaki2", 
-  "aquamarine3", "turquoise2", "powderblue", "deepskyblue3", 
+  "firebrick3", "coral", "goldenrod2", "khaki2", 
+  "aquamarine3", "darkcyan", "turquoise2", "powderblue", "deepskyblue3", "slateblue2",
   "plum", "lightpink1", "lavenderblush2")
 
 

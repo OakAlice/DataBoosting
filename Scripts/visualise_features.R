@@ -1,40 +1,64 @@
 # Visulising the featue space with and without synthetic data -------------
 # To understand why my methods are/aren't working, I need to visualise them in feature space.
 
-plot_boosted_data <- function(boosted, metadata_cols = c("ID", "Time"),
-                              n_neighbors = 15, min_dist = 0.1, seed = 1000) {
+plot_boosted_facets <- function(feature_data, boosted,
+                                target_col = "Activity",
+                                metadata_cols = c("ID", "Time", "Activity", "Method"),
+                                n_neighbors = 15, min_dist = 0.1, seed = 1000,
+                                ncol = 3) {
   
-  boosted   <- as.data.frame(boosted)
- 
-  # shared numeric features only
-  feat_cols <- intersect(names(boosted))
-  feat_cols <- setdiff(feat_cols, metadata_cols)
-  feat_cols <- feat_cols[vapply(boosted[feat_cols], is.numeric, logical(1)) &
-                           vapply(test_data[feat_cols], is.numeric, logical(1))]
+  feature_data <- as.data.frame(feature_data)
+  boosted_list <- lapply(boosted, as.data.frame)
   
-  # drop zero-variance features, then NA rows
-  keep <- vapply(boosted[feat_cols], function(x) sd(x, na.rm = TRUE) > 0, logical(1))
-  feat_cols <- feat_cols[keep %in% TRUE]
+  # features shared by the reference and EVERY method
+  feat_cols <- Reduce(intersect, c(list(names(feature_data)), lapply(boosted_list, names)))
+  feat_cols <- setdiff(feat_cols, c(metadata_cols, target_col))
+  is_num <- function(d) vapply(d[feat_cols], is.numeric, logical(1))
+  ok <- Reduce(`&`, c(list(is_num(feature_data)), lapply(boosted_list, is_num)))
+  feat_cols <- feat_cols[ok]
+  feat_cols <- feat_cols[vapply(feature_data[feat_cols],
+                                function(x) sd(x, na.rm = TRUE) > 0, logical(1))]
   
-  boosted   <- boosted[complete.cases(boosted[feat_cols]), ]
+  feature_data <- feature_data[complete.cases(feature_data[feat_cols]), ]
   
-  
+  # fit once on the reference
+  Xf <- scale(as.matrix(feature_data[feat_cols]))
   set.seed(seed)
-  um <- umap(Xb, n_neighbors = n_neighbors, min_dist = min_dist, ret_model = TRUE)
-  emb_b <- um$embedding
-  emb_t <- umap_transform(Xt, um)
+  um <- umap(Xf, n_neighbors = n_neighbors, min_dist = min_dist, ret_model = TRUE)
   
-  df_b <- data.frame(UMAP1 = emb_b[, 1], UMAP2 = emb_b[, 2], ID = as.character(boosted$ID))
+  Real <- data.frame(UMAP1 = um$embedding[, 1], UMAP2 = um$embedding[, 2],
+                     ID = as.character(feature_data$ID),
+                     Activity = feature_data[[target_col]])
   
-  Synth <- df_b %>% dplyr::filter(ID == "Synth")
-  Real <- df_b %>% dplyr::filter(!ID == "Synth")
+  # project each method's new rows with the reference scaling
+  Synth <- bind_rows(lapply(names(boosted_list), function(m) {
+    b  <- boosted_list[[m]]
+    b  <- b[complete.cases(b[feat_cols]), ]
+    Xb <- scale(as.matrix(b[feat_cols]),
+                center = attr(Xf, "scaled:center"),
+                scale  = attr(Xf, "scaled:scale"))
+    emb <- umap_transform(Xb, um)
+    data.frame(UMAP1 = emb[, 1], UMAP2 = emb[, 2], method = m)
+  }))
+  Synth$method <- factor(Synth$method, levels = names(boosted_list))
   
   ggplot() +
-    geom_point(data = Real, aes(UMAP1, UMAP2, colour = ID), size = 1, alpha = 0.5) +
-    geom_point(data = Synth, aes(UMAP1, UMAP2), shape = 8,
-               colour = "black", size = 1.8, stroke = 0.5, alpha = 0.25) +
-    labs(colour = "Train ID") +
-    scale_colour_manual(values = fave_colours)+
-    my_theme()
+    # Real has no 'method' column, so it is repeated in every facet
+    geom_point(data = Real %>% filter(Activity == "other"),
+               aes(UMAP1, UMAP2, colour = ID),
+               shape = 21, size = 2, alpha = 0.5) +
+    geom_point(data = Real %>% filter(Activity == "target"),
+               aes(UMAP1, UMAP2, colour = ID),
+               size = 3, alpha = 1) +
+    geom_point(data = Synth, aes(UMAP1, UMAP2),
+               shape = 8, colour = "black", size = 1, stroke = 0.5, alpha = 0.5) +
+    facet_wrap(~method, ncol = 2) +
+    labs(colour = paste0("Opaque = target \nStars = synthetic \n\nTrain ID")) +
+    scale_colour_manual(values = fave_colours) +
+    my_theme() +
+    theme(legend.text  = element_text(size = 14),
+          legend.title = element_text(size = 16))
 }
+
+
 

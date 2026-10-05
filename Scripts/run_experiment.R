@@ -49,7 +49,7 @@ run_fold <- function(fold, method, dat, cfg, ID_groups) {
     prior_features   = dplyr::filter(dat$features, !ID %in% test_IDs)
   )
   
-  fwrite(boosted, file.path(cfg$output_path, sprintf("%s_boosted_%d.csv", method, fold)))
+  boosted <- boosted$boosted_data # extract all the data
   
   # NOTE: The binaries here are hardcoded
   model   <- design_build_RF(boosted, type = "binary", metadata_cols)
