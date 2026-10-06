@@ -219,7 +219,141 @@ overlap_minority <- function(raw_data, sample_rate, metadata_cols, target_col, m
   
   bind_rows(features)
 }
+
+decomposition_minority <- function(raw_data, feature_data, target_col, minority_classes,
+                                   Hz, window_s, trend_frac = 0.5, noise_frac = 0.1,
+                                   amp_sd = 0.1, axis_cols = c("X", "Y", "Z")) {
+  # decompose raw windows into trend / oscillation / residual, mix components
+  # across different windows, recombine, then compute features
+  target_n <- round(mean(table(feature_data[[target_col]])))
+  win_len  <- window_s * Hz
   
+  odd <- function(k) { k <- max(3, round(k)); if (k %% 2 == 0) k + 1 else k }
+  k_trend <- odd(trend_frac * win_len)
+  k_noise <- odd(noise_frac * win_len)
+  
+  # centred moving average with edge replication
+  ma <- function(x, k) {
+    h <- (k - 1) / 2; n <- length(x)
+    y <- as.numeric(stats::filter(c(rep(x[1], h), x, rep(x[n], h)), rep(1 / k, k), sides = 2))
+    y[(h + 1):(h + n)]
+  }
+  decomp <- function(m) {              # m: win_len x axes matrix
+    trend <- apply(m, 2, ma, k = k_trend)
+    det   <- m - trend
+    seas  <- apply(det, 2, ma, k = k_noise)
+    list(trend = trend, seas = seas, resid = det - seas)
+  }
+  
+  synth_raw_list <- lapply(intersect(minority_classes, unique(raw_data[[target_col]])), function(cls) {
+    
+    n_needed <- target_n - sum(feature_data[[target_col]] == cls)
+    if (n_needed <= 0) return(NULL)
+    
+    # non-overlapping raw windows of this class, within contiguous runs per ID
+    cls_windows <- raw_data %>%
+      mutate(.row = row_number()) %>%
+      filter(.data[[target_col]] == cls) %>%
+      group_by(ID, run = cumsum(c(1, diff(.row)) != 1)) %>%
+      group_map(~ {
+        m   <- as.matrix(.x[, axis_cols])
+        n_w <- nrow(m) %/% win_len
+        lapply(seq_len(n_w), function(i) m[((i - 1) * win_len + 1):(i * win_len), , drop = FALSE])
+      }) %>%
+      unlist(recursive = FALSE)
+    
+    if (length(cls_windows) < 2) return(NULL)
+    parts <- lapply(cls_windows, decomp)
+    
+    lapply(seq_len(n_needed), function(i) {
+      # trend, oscillation and residual each from a different random window
+      idx <- sample.int(length(parts), 3, replace = length(parts) < 3)
+      
+      m <- parts[[idx[1]]]$trend +
+        parts[[idx[2]]]$seas  * rnorm(1, 1, amp_sd) +
+        parts[[idx[3]]]$resid * rnorm(1, 1, amp_sd)
+      colnames(m) <- axis_cols
+      
+      out <- as.data.frame(m)
+      out$ID   <- paste0("Synth_", cls, "_", i)   # unique per window so none get merged
+      out$Time <- "NA"
+      out[[target_col]] <- cls
+      out
+    }) %>% bind_rows()
+  })
+  
+  synth_raw <- bind_rows(synth_raw_list)
+  if (nrow(synth_raw) == 0) return(NULL)
+  
+  synth_features <- generate_features_master(data = synth_raw,
+                                             sample_rate = Hz,
+                                             overlap_setting = 0,
+                                             window_setting  = window_s)
+  synth_features$ID <- "Synth"
+  return(synth_features)
+}
+
+rotation_minority <- function(raw_data, feature_data, target_col, minority_classes,
+                              Hz, window_s, max_angle = 15, rot_axis = NULL,
+                              axis_cols = c("X", "Y", "Z")) {
+  # rotate real raw windows by small random angles, then compute features
+  # rot_axis: NULL = random axis per window; or a unit vector e.g. c(0, 0, 1)
+  target_n <- round(mean(table(feature_data[[target_col]])))
+  win_len  <- window_s * Hz
+  
+  # Rodrigues rotation matrix
+  rot_mat <- function(axis, theta) {
+    axis <- axis / sqrt(sum(axis^2))
+    K <- matrix(c(0, -axis[3], axis[2],
+                  axis[3], 0, -axis[1],
+                  -axis[2], axis[1], 0), 3, byrow = TRUE)
+    diag(3) + sin(theta) * K + (1 - cos(theta)) * K %*% K
+  }
+  
+  synth_raw_list <- lapply(intersect(minority_classes, unique(raw_data[[target_col]])), function(cls) {
+    
+    n_needed <- target_n - sum(feature_data[[target_col]] == cls)
+    if (n_needed <= 0) return(NULL)
+    
+    # non-overlapping raw windows of this class, within contiguous runs per ID
+    cls_windows <- raw_data %>%
+      mutate(.row = row_number()) %>%
+      filter(.data[[target_col]] == cls) %>%
+      group_by(ID, run = cumsum(c(1, diff(.row)) != 1)) %>%
+      group_map(~ {
+        m   <- as.matrix(.x[, axis_cols])
+        n_w <- nrow(m) %/% win_len
+        lapply(seq_len(n_w), function(i) m[((i - 1) * win_len + 1):(i * win_len), , drop = FALSE])
+      }) %>%
+      unlist(recursive = FALSE)
+    
+    if (length(cls_windows) == 0) return(NULL)
+    
+    lapply(seq_len(n_needed), function(i) {
+      m     <- cls_windows[[sample.int(length(cls_windows), 1)]]
+      axis  <- if (is.null(rot_axis)) rnorm(3) else rot_axis
+      theta <- runif(1, -max_angle, max_angle) * pi / 180
+      m     <- m %*% t(rot_mat(axis, theta))     # rotate every row (sample)
+      colnames(m) <- axis_cols
+      
+      out <- as.data.frame(m)
+      out$ID   <- paste0("Synth_", cls, "_", i)   # unique per window so none get merged
+      out$Time <- "NA"
+      out[[target_col]] <- cls
+      out
+    }) %>% bind_rows()
+  })
+  
+  synth_raw <- bind_rows(synth_raw_list)
+  if (nrow(synth_raw) == 0) return(NULL)
+  
+  synth_features <- generate_features_master(data = synth_raw,
+                                             sample_rate = Hz,
+                                             overlap_setting = 0,
+                                             window_setting  = window_s)
+  synth_features$ID <- "Synth"
+  return(synth_features)
+}
 
 
 # main wrapper ------------------------------------------------------------
@@ -234,12 +368,13 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
   #' Hz: frequency of the sampling 
   #' path_to_features: In case these have already been generated, saves a lot of time. Ugly tho.
   
+  target_n <- round(mean(table(prior_features[[target_col]])))
+  
   if (method == "Nothing"){
     # just give this back to us
     synth_features <- prior_features
     
   } else if (method == "Oversample"){
-    target_n <- round(mean(table(prior_features[[target_col]])))
     synth_features <- oversample_minority(prior_features, target_col, minority_classes, target_n)
     
   } else if (method == "SMOTE"){
@@ -250,24 +385,33 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
     
   } else if (method == "RandomNoise"){
     synth_features <- noise_minority(prior_features, metadata_cols, target_col, minority_classes)
-  
+    
+  } else if (method == "Decomposition"){
+    synth_features <- decomposition_minority(training_data, prior_features, 
+                                             target_col, minority_classes,
+                                            Hz, window_s = ifelse(Hz > 1, 2, 5), 
+                                            trend_frac = 0.5, noise_frac = 0.1, amp_sd = 0.1)
+    synth_features <- synth_features %>% mutate(Time = prior_features$Time[1])
+    
+  } else if (method == "Rotation") {
+    synth_features <- rotation_minority(training_data, prior_features, target_col, minority_classes,
+                                        Hz, window_s = ifelse(Hz > 1, 2, 5))
+    synth_features <- synth_features %>% mutate(Time = prior_features$Time[1])
+    
   } else if (grepl("Overlap", method, fixed = TRUE)){
     # overlap by the percentage defined in the string name
     # NOTE: have put some checks about whether the file exists to just save me time
 
     overlap_percent <- as.numeric(gsub("Overlap", "", method))
-  
-    raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
-    synth_features <- overlap_minority(raw_data, sample_rate = Hz, metadata_cols, target_col, minority_classes, overlap_percent)
+    synth_features <- overlap_minority(training_data, sample_rate = Hz, metadata_cols, target_col, minority_classes, overlap_percent)
 
   } else if (method == "DTW") {
-    raw_data <- fread(file.path("Data", species, "Relabelled_raw_data.csv"))
-    synth_features <- DTW_minority(raw_data, prior_features, target_col, minority_classes,
-                             Hz, window_s = ifelse(Hz > 1, 2, 5), n_avg = 3)
-    synth_features <- synth_features %>% mutate(Time = "NA")
+    synth_features <- DTW_minority(training_data, prior_features, target_col, minority_classes,
+                             Hz, window_s = ifelse(Hz > 1, 2, 5), n_avg = 3) # 1 changes nothing 
+    synth_features <- synth_features %>% mutate(Time = prior_features$Time[1])
                               
   } else {
-    print("unsure what this method is. Please choose from defined list of options.")
+    print("Please choose from defined list of options.")
   }
   
   boosted_data <- unique(rbindlist(list(synth_features, prior_features),

@@ -41,16 +41,30 @@ ggplot(counts, aes(x = Activity, y = n, fill = ID)) +
   my_theme()
 
 
-species <- "Yu_Duck"
+
+
+
+
+
+species <- "Studd_Squirrel"
+
+dat <- fread(file.path("Data", species, "Formatted_raw_data.csv"))
+counts <- dat %>% group_by(Activity, ID) %>% dplyr::count()
+
+ggplot(counts, aes(x = Activity, y = n, fill = ID)) +
+  geom_col(position = "stack") +
+  scale_fill_manual(values = more_colours) +
+  my_theme() +
+  ggtitle(species)
+
+
+settings <- fread("Data/DatasetCharacteristics.csv")
 target <- settings$minorityTarget[settings$species == species]
+dat$Activity <- ifelse(dat$Activity == target, "target", "other")
 
-raw_data <- fread(file.path("Data", species, "Formatted_raw_data.csv"))
-raw_data$Activity <- ifelse(raw_data$Activity == target, "target", "other")
-fwrite(raw_data, file.path("Data", species, "Relabelled_raw_data.csv"))
+dat <- dat %>% select(-FuncActivity, -BroadActivity)
 
-fts <- fread(file.path("Data", species, "Nothing_Feature_data.csv"))
-fts$Activity <- ifelse(fts$Activity == target, "target", "other")
-fwrite(fts, file.path("Data", species, "Nothing_Feature_data.csv"))
+fwrite(dat, file.path("Data", species, "Relabelled_raw_data.csv"))
 
 
 

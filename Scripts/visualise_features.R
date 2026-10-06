@@ -54,7 +54,7 @@ plot_boosted_facets <- function(feature_data, boosted,
                shape = 8, colour = "black", size = 1, stroke = 0.5, alpha = 0.5) +
     facet_wrap(~method, ncol = 2) +
     labs(colour = paste0("Opaque = target \nStars = synthetic \n\nTrain ID")) +
-    scale_colour_manual(values = fave_colours) +
+    scale_colour_manual(values = if (length(unique(Real$ID)) > 13) more_colours else fave_colours) +
     my_theme() +
     theme(legend.text  = element_text(size = 14),
           legend.title = element_text(size = 16))

@@ -1,0 +1,123 @@
+# just very basic for now
+result_files <- list.files("Output", pattern = "_performance_", recursive = TRUE, full.names = TRUE)
+results_df <- lapply(result_files, function(x){
+  dat <- fread(x)
+  dat$Species <- basename(dirname(x))
+  dat$fold <- str_split(basename(tools::file_path_sans_ext(x)), "_", simplify = TRUE)[[3]]
+  dat$method<- str_split(basename(tools::file_path_sans_ext(x)), "_", simplify = TRUE)[[1]]
+  dat$Behaviour <- gsub("Class: ", "", dat$Behaviour)
+  dat
+})
+result_df <- rbindlist(results_df, fill = TRUE)
+result_df$method <- factor(result_df$method, levels = c(
+  "Nothing", "Oversample","Overlap50", "Overlap90", "Rotation", "RandomNoise", 
+  "SMOTE", "ADSYN",  "DTW", "Decomposition"))
+
+# add in the silhouette scores
+sils <- fread(file.path("Output", "Silhouette_scores.csv")) %>% dplyr::filter(behaviour == "target")
+result_df <- merge(result_df, sils, by = "Species")
+
+
+summary_df <- result_df %>%
+  group_by(Species, Behaviour, method,mean_sil) %>%
+  summarise(
+    n = n(),
+    chance = mean(Prevalence, na.rm = TRUE),
+    mean = mean(AUC_PR, na.rm = TRUE),
+    se = sd(AUC_PR, na.rm = TRUE) / sqrt(n),
+    ci = 1.96 * se, # gives us the confidence intervals (I think??)
+    .groups = "drop"
+  )
+
+ggplot(summary_df,
+       aes(x = method,
+           y = mean,
+           colour = method,
+           group = Species)) +
+  geom_point(size = 5) +
+  geom_errorbar(aes(ymin = mean - ci,
+                    ymax = mean + ci),
+                linewidth = 1,
+                width = 0.5) +
+  geom_hline(data = summary_df, aes(yintercept = chance),
+             linetype = "dashed", colour = "grey30", alpha = 0.7) +
+  labs(x = "Boosting Method",
+       y = "Mean AUC-PR") +
+  # my_theme() + 
+  scale_colour_manual(values = fave_colours) +
+  facet_wrap(~Species, ncol = 3) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+
+
+
+
+
+
+dat <- result_df %>%                        # replicate-level scores, not summary_df
+  mutate(method = relevel(factor(method), ref = "Nothing"),
+         sil_c  = scale(mean_sil, scale = FALSE)[, 1])   # centre for interpretable main effects
+
+m <- glmmTMB(
+  AUC_PR ~ method * sil_c + (1 | Species) + (1 | Species),
+  family = ordbeta(),                    # bounded 0-1, allows exact 0s and 1s
+  data   = dat
+)
+
+summary(m)
+car::Anova(m, type = "III")
+
+
+
+
+
+
+
+
+# comments from Dave
+baseline <- result_df %>%
+  filter(method == "Nothing") %>%
+  select(Species, fold, baseline = AUC_PR)
+df <- result_df %>%
+  left_join(baseline, by = c("Species", "fold")) %>%
+  mutate(relative_change = AUC_PR - baseline,
+         sp_rep = str_c(Species, "_", fold), #*** Reusing factor levels in random effects can cause issues, so I create unique factor levels...
+         smoothing_type = factor(method, levels = c(
+           "Nothing", "Oversample","Overlap50", "Overlap90", "Rotation", "RandomNoise", 
+           "SMOTE", "ADSYN",  "DTW", "Decomposition")), #*** do this in the code flow...
+         across(where(is.character), as.factor)) #*** I'd make everything that is still character into a factor, too
+
+# remove no
+df1 <- filter(df, method != "Nothing") %>%  #*** New df without "No"
+  mutate(method = fct_drop(method)) # Drop unused factor levels
+
+m1 <- glmmTMB(relative_change ~ method + (1|Species/fold), data = df1)
+summary(m1) #*** `Mode` is now the base case, and all other estimates are adjustments relative to that. To get adjustments relative to zero, just remove the intercept.
+m1.2 <- update(m1, ~. -1) #*** the `-1` removes the intercept
+summary(m1.2)
+
+DHARMa::simulateResiduals(m1.2, plot = TRUE) #*** The diagnostics are horrible, at least for Normality...I don't know how we could fix those, though...given the data we have...maybe we just rely on the robustness of the method
+
+#*** If you wanted an overall plot that illustrates the results for the fixed effects averaged over the random effects (mirroring your summary table)
+group_preds <- marginaleffects::predictions(m1.2,
+                                            re.form = NA) %>%   # Includes fixed + random effects
+  as_tibble()
+
+ggplot(group_preds,
+       aes(x = method,
+           y = estimate,
+           colour = method)) +
+  geom_errorbar(aes(ymin = conf.low,
+                    ymax = conf.high),
+                linewidth = 1,
+                width = 0.5) +
+  geom_point(size = 5) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             colour = "red") +
+  labs(x = "Augmentation method",
+       y = "Mean change in AUC-PR (relative to no augmentation)") +
+  # my_theme() + 
+  scale_colour_manual(values = fave_colours) +
+  theme(legend.position = "none")
+

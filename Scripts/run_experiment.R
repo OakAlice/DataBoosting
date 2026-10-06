@@ -38,10 +38,9 @@ run_fold <- function(fold, method, dat, cfg, ID_groups) {
   if (file.exists(out_file)) return(invisible(NULL))
   
   test_IDs <- ID_groups$ID[ID_groups$group == fold]
-  print(test_IDs) # debug
   
   boosted <- boost_training_data(
-    dplyr::filter(dat$raw, !ID %in% test_IDs),
+    training_data = dplyr::filter(dat$raw, !ID %in% test_IDs),
     metadata_cols, target_col,
     minority_classes = "target",
     method           = method,
@@ -49,10 +48,10 @@ run_fold <- function(fold, method, dat, cfg, ID_groups) {
     prior_features   = dplyr::filter(dat$features, !ID %in% test_IDs)
   )
   
-  boosted <- boosted$boosted_data # extract all the data
+  all <- boosted$boosted_data # extract all the data
   
   # NOTE: The binaries here are hardcoded
-  model   <- design_build_RF(boosted, type = "binary", metadata_cols)
+  model   <- design_build_RF(all, type = "binary", metadata_cols)
   metrics <- test_model(type = "binary", 
                         model,
                         test_data = dplyr::filter(dat$features, ID %in% test_IDs),
@@ -73,6 +72,8 @@ run_species <- function(species, settings, boost_methods, k = 3) {
   
   grid <- expand.grid(method = boost_methods, fold = seq_len(k),
                       stringsAsFactors = FALSE)
+  
+  # j <- 1
   
   for (j in seq_len(nrow(grid))) {
     message(species, " | ", grid$method[j], " | fold ", grid$fold[j])
