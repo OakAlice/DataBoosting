@@ -40,7 +40,7 @@ oversample_minority <- function(feature_data, target_col, minority_classes, targ
   return(boosted_data)
 }
 
-smote_minority <- function(training_data, smote_method, metadata_cols, minority_classes){
+smote_minority <- function(training_data, smote_method, metadata_cols, minority_classes, k = NULL){
   # cant handle NAs so have to clean first
   cleaned <- clean_raw_data(training_data, metadata_cols, target_col)
   training_data <- cleaned$training_data
@@ -48,24 +48,20 @@ smote_minority <- function(training_data, smote_method, metadata_cols, minority_
   aim <- cleaned$target_n
   X <- as.data.frame(cleaned$X)
   
-  n_min <- sum(y == minority_classes)
-  n_needed <- aim - n_min
-  K_chosen <- min(n_min - 1, 5)
-  
-  if (n_needed <= 0 || K_chosen < 1) return(NULL)
+  multiplier <- ceiling(round(mean(table(y))) / round(min(table(y))) / 2) # to make it half of the majority
   
   syn <- tryCatch(
     if (smote_method == "SMOTE") {
-      smotefamily::SMOTE(X = X, target = y, K = K_chosen,
-                         dup_size = ceiling(n_needed / n_min))
+      smotefamily::SMOTE(X = X, target = y, K = k,
+                         dup_size = multiplier) # 0 for the dup_size will balance the majority and minority
     } else if (smote_method == "ADSYN") {
-      smotefamily::ADAS(X = X, target = y, K = K_chosen)
+      smotefamily::ADAS(X = X, target = y, K = k)
     },
-    error = function(e) { message(method, " failed: ", e$message); NULL }
+    error = function(e) { message(smote_method, " failed: ", e$message); NULL }
   )
   if (is.null(syn)) return(NULL)
   
-  synth_data <- syn$syn_data %>% filter(class == "target")
+  synth_data <- syn$syn_data %>% dplyr::filter(class == "target")
   if (nrow(synth_data) == 0) return(NULL)
   
   synth_data <- synth_data %>%
@@ -125,7 +121,7 @@ DTW_minority <- function(raw_data, feature_data, target_col, minority_classes, H
     # non-overlapping raw windows of this class, within contiguous runs per ID
     cls_windows <- raw_data %>%
       mutate(.row = row_number()) %>%
-      filter(.data[[target_col]] == cls) %>%
+      dplyr::filter(.data[[target_col]] == cls) %>%
       group_by(ID, run = cumsum(c(1, diff(.row)) != 1)) %>%
       group_map(~ {
         m   <- as.matrix(.x[, axis_cols])
@@ -141,7 +137,8 @@ DTW_minority <- function(raw_data, feature_data, target_col, minority_classes, H
       pick <- cls_windows[sample.int(length(cls_windows), k)]
       axes <- lapply(seq_along(axis_cols), function(a) {
         dtwclust::DBA(lapply(pick, function(m) m[, a]),
-                      centroid = pick[[1]][, a], trace = FALSE)
+                      centroid = pick[[1]][, a], trace = FALSE )#,
+                      #window.size = XXXXXX) # NOTE I need to actually tune this wtf
       })
       m <- do.call(cbind, axes)
       colnames(m) <- axis_cols
@@ -253,7 +250,7 @@ decomposition_minority <- function(raw_data, feature_data, target_col, minority_
     # non-overlapping raw windows of this class, within contiguous runs per ID
     cls_windows <- raw_data %>%
       mutate(.row = row_number()) %>%
-      filter(.data[[target_col]] == cls) %>%
+      dplyr::filter(.data[[target_col]] == cls) %>%
       group_by(ID, run = cumsum(c(1, diff(.row)) != 1)) %>%
       group_map(~ {
         m   <- as.matrix(.x[, axis_cols])
@@ -318,7 +315,7 @@ rotation_minority <- function(raw_data, feature_data, target_col, minority_class
     # non-overlapping raw windows of this class, within contiguous runs per ID
     cls_windows <- raw_data %>%
       mutate(.row = row_number()) %>%
-      filter(.data[[target_col]] == cls) %>%
+      dplyr::filter(.data[[target_col]] == cls) %>%
       group_by(ID, run = cumsum(c(1, diff(.row)) != 1)) %>%
       group_map(~ {
         m   <- as.matrix(.x[, axis_cols])
@@ -378,13 +375,17 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
     synth_features <- oversample_minority(prior_features, target_col, minority_classes, target_n)
     
   } else if (method == "SMOTE"){
-    synth_features <- smote_minority(training_data = prior_features, smote_method = "SMOTE", metadata_cols, minority_classes)
+    synth_features <- smote_minority(training_data = prior_features, 
+                                     smote_method = "SMOTE", 
+                                     metadata_cols, minority_classes,
+                                     k = 5)
     
   } else if (method == "ADSYN") {
     synth_features <- smote_minority(prior_features, smote_method = "ADSYN", metadata_cols, minority_classes)
     
   } else if (method == "RandomNoise"){
-    synth_features <- noise_minority(prior_features, metadata_cols, target_col, minority_classes)
+    synth_features <- noise_minority(training_data = prior_features, 
+                                     metadata_cols, target_col, minority_classes)
     
   } else if (method == "Decomposition"){
     synth_features <- decomposition_minority(training_data, prior_features, 
@@ -394,8 +395,13 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
     synth_features <- synth_features %>% mutate(Time = prior_features$Time[1])
     
   } else if (method == "Rotation") {
-    synth_features <- rotation_minority(training_data, prior_features, target_col, minority_classes,
-                                        Hz, window_s = ifelse(Hz > 1, 2, 5))
+    synth_features <- rotation_minority(raw_data = training_data, 
+                                        feature_data = prior_features, 
+                                        target_col, 
+                                        minority_classes,
+                                        Hz, 
+                                        window_s = ifelse(Hz > 1, 2, 5),
+                                        max_angle = 5)
     synth_features <- synth_features %>% mutate(Time = prior_features$Time[1])
     
   } else if (grepl("Overlap", method, fixed = TRUE)){
@@ -406,8 +412,11 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
     synth_features <- overlap_minority(training_data, sample_rate = Hz, metadata_cols, target_col, minority_classes, overlap_percent)
 
   } else if (method == "DTW") {
-    synth_features <- DTW_minority(training_data, prior_features, target_col, minority_classes,
-                             Hz, window_s = ifelse(Hz > 1, 2, 5), n_avg = 3) # 1 changes nothing 
+    synth_features <- DTW_minority(raw_data = training_data, 
+                                   feature_data = prior_features, 
+                                   target_col, minority_classes, Hz, 
+                                   window_s = ifelse(Hz > 1, 2, 5), 
+                                   n_avg = 3) # 1 changes nothing 
     synth_features <- synth_features %>% mutate(Time = prior_features$Time[1])
                               
   } else {

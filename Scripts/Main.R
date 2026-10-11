@@ -1,4 +1,4 @@
-# Main script for data boosting chapter -----------------------------------
+# Part 1: Binary experiments ----------------------------------------------
 
 # Set up ------------------------------------------------------------------
 # setwd("C:/Users/oaw001/OneDrive - University of the Sunshine Coast/04.DataBoosting")
@@ -6,9 +6,11 @@ setwd("C:/Users/PC/OneDrive - University of the Sunshine Coast/04.DataBoosting")
 source("Scripts/config.R") # file with all the config infomation for the analysis
 
 # All trials --------------------------------------------------------------
-all_species <- "Studd_Squirrel"
-for (species in all_species) run_species(species, settings, boost_methods, k = 3)
+# all_species <- setdiff(all_species, "Bonneau_Goat")
+for (species in all_species) run_binary_experiment(species, settings, boost_methods, k = 3)
 # everything saved to the data and output folders
+for (species in all_species) run_volume_experiment(species, settings, boost_methods, k = 3)
+
 
 
 # Generate synthetic data -------------------------------------------------

@@ -61,7 +61,7 @@ source("Scripts/model_optimisation.R")
 source("Scripts/performance_testing.R")
 source("Scripts/silhouette.R")
 source("Scripts/visualise_features.R")
-source("Scripts/analysis.R")
+# source("Scripts/analysis.R")
 
 # variables
 set.seed(1000)
@@ -75,9 +75,9 @@ boost_methods <- c("Nothing",
                    "RandomNoise",
                    "Rotation",
                    "SMOTE",
-                   "ADSYN",
-                   "DTW",
-                   "Decomposition"
+                   "ADSYN" #,
+                   #"DTW",
+                   #"Decomposition"
 )
 
 all_species <- basename(list.dirs("Data", recursive = F))

@@ -13,13 +13,26 @@ result_df$method <- factor(result_df$method, levels = c(
   "Nothing", "Oversample","Overlap50", "Overlap90", "Rotation", "RandomNoise", 
   "SMOTE", "ADSYN",  "DTW", "Decomposition"))
 
-# add in the silhouette scores
-sils <- fread(file.path("Output", "Silhouette_scores.csv")) %>% dplyr::filter(behaviour == "target")
-result_df <- merge(result_df, sils, by = "Species")
+result_df <- merge(result_df, settings, by.x = "Species", by.y = "species")
 
+
+
+
+# add in the silhouette scores
+# sils <- fread(file.path("Output", "Silhouette_scores.csv")) %>% dplyr::filter(behaviour == "target")
+# result_df <- merge(result_df, sils, by = "Species")
+
+
+# Identify the high performing (ceiling) species
+high_performance_species <- result_df %>%
+  dplyr::filter(method == "Nothing") %>%
+  group_by(Species) %>%
+  summarise(mean = mean(AUC_PR, na.rm = TRUE)) %>%
+  dplyr::filter(mean > 0.8) %>%
+  pull(Species)
 
 summary_df <- result_df %>%
-  group_by(Species, Behaviour, method,mean_sil) %>%
+  group_by(Species, Behaviour, method) %>%
   summarise(
     n = n(),
     chance = mean(Prevalence, na.rm = TRUE),
@@ -27,9 +40,10 @@ summary_df <- result_df %>%
     se = sd(AUC_PR, na.rm = TRUE) / sqrt(n),
     ci = 1.96 * se, # gives us the confidence intervals (I think??)
     .groups = "drop"
-  )
+  ) 
 
-ggplot(summary_df,
+plot_df <- summary_df #%>% dplyr::filter(!Species %in% high_performance_species)
+ggplot(plot_df,
        aes(x = method,
            y = mean,
            colour = method,
@@ -39,11 +53,11 @@ ggplot(summary_df,
                     ymax = mean + ci),
                 linewidth = 1,
                 width = 0.5) +
-  geom_hline(data = summary_df, aes(yintercept = chance),
+  geom_hline(data = plot_df, aes(yintercept = chance),
              linetype = "dashed", colour = "grey30", alpha = 0.7) +
   labs(x = "Boosting Method",
        y = "Mean AUC-PR") +
-  # my_theme() + 
+  my_theme() + 
   scale_colour_manual(values = fave_colours) +
   facet_wrap(~Species, ncol = 3) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
@@ -76,6 +90,7 @@ car::Anova(m, type = "III")
 
 # comments from Dave
 baseline <- result_df %>%
+  dplyr::filter(!Species %in% high_performance_species) %>% 
   filter(method == "Nothing") %>%
   select(Species, fold, baseline = AUC_PR)
 df <- result_df %>%
@@ -91,7 +106,8 @@ df <- result_df %>%
 df1 <- filter(df, method != "Nothing") %>%  #*** New df without "No"
   mutate(method = fct_drop(method)) # Drop unused factor levels
 
-m1 <- glmmTMB(relative_change ~ method + (1|Species/fold), data = df1)
+#m1 <- glmmTMB(relative_change ~ method + minorityRatio + (1|Species/fold), data = df1)
+m1 <- glmmTMB(relative_change ~ method + minorityRatio + (1|Species:fold), data = df1)
 summary(m1) #*** `Mode` is now the base case, and all other estimates are adjustments relative to that. To get adjustments relative to zero, just remove the intercept.
 m1.2 <- update(m1, ~. -1) #*** the `-1` removes the intercept
 summary(m1.2)
@@ -117,7 +133,18 @@ ggplot(group_preds,
              colour = "red") +
   labs(x = "Augmentation method",
        y = "Mean change in AUC-PR (relative to no augmentation)") +
-  # my_theme() + 
+  my_theme() + 
   scale_colour_manual(values = fave_colours) +
   theme(legend.position = "none")
+
+
+# testing the minority ratio more specifically
+m1 <- glmmTMB(relative_change ~ method + minorityRatio + (1|Species:fold), data = df1)
+m3 <- glmmTMB(relative_change ~ method * minorityRatio + (1|Species:fold), data = df1)
+anova(m1, m3)  # does the slope differ by method?
+
+library(emmeans)
+emtrends(m3, ~ method, var = "minorityRatio") |> test(adjust = "holm")
+
+
 

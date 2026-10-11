@@ -62,7 +62,7 @@ run_fold <- function(fold, method, dat, cfg, ID_groups) {
   invisible(metrics)
 }
 
-run_species <- function(species, settings, boost_methods, k = 3) {
+run_binary_experiment <- function(species, settings, boost_methods, k = 3) {
   cfg <- get_species_config(species, settings)
   dat <- prepare_species_data(cfg)
   
