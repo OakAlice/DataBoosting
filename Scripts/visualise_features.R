@@ -1,6 +1,33 @@
 # Visulising the featue space with and without synthetic data -------------
 # To understand why my methods are/aren't working, I need to visualise them in feature space.
 
+
+generate_augmented_data <- function(all_species, boost_methods){
+  
+  grid <- expand.grid(method = setdiff(boost_methods, "Nothing"), species = all_species, stringsAsFactors = FALSE)
+  for (j in seq_len(nrow(grid))) {
+    message(grid$species[j], " | ", grid$method[j])
+    cfg <- get_species_config(grid$species[j], settings)
+    
+    raw_data <- fread(file.path("Data", grid$species[j], "Formatted_raw_data.csv"))
+    feature_data <- fread(file.path("Data", grid$species[j], "Nothing_Feature_data.csv"))
+    
+    boosted <- boost_training_data(
+      raw_data,
+      metadata_cols = c("ID", "Time", "Activity"), 
+      target_col = "Activity",
+      minority_classes = "target",
+      method           = grid$method[j],
+      Hz               = cfg$Hz,
+      prior_features   = feature_data
+    )
+    
+    synth <- boosted$synth_features
+    fwrite(synth, file.path("Data", grid$species[j], "Boost", paste0(grid$species[j], "_", grid$method[j], ".csv")))
+  }
+}
+
+
 plot_boosted_facets <- function(feature_data, boosted,
                                 target_col = "Activity",
                                 metadata_cols = c("ID", "Time", "Activity", "Method"),

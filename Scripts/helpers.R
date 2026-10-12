@@ -48,3 +48,16 @@ cached <- function(path, compute) {
   fwrite(out, path)
   out
 }
+
+
+reset_everything <- function() {
+  data_files   <- list.files("Data", full.names = TRUE, recursive = TRUE)
+  keep_files   <- list.files("Data", full.names = TRUE, recursive = TRUE,
+                             pattern = "Formatted_raw_data\\.csv$")
+  keep_files <- c(keep_files, "Data/DatasetCharacteristics.csv")
+  delete_files <- c(setdiff(data_files, keep_files),
+                    list.files("Output", full.names = TRUE, recursive = TRUE))
+  
+  file.remove(delete_files) %>% invisible()
+}
+

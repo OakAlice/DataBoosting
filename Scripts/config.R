@@ -38,8 +38,6 @@ fave_colours <- c(
   "firebrick3", "coral", "goldenrod2", "khaki2", 
   "aquamarine3", "darkcyan", "turquoise2", "powderblue", "deepskyblue3", "slateblue2",
   "plum", "lightpink1", "lavenderblush2")
-
-
 more_colours <- c(
   "firebrick3", "tomato", "coral", "darkorange2", "sienna3", "tan2",
   "goldenrod2", "lemonchiffon2", "khaki2", "gold1",
@@ -50,8 +48,6 @@ more_colours <- c(
   "mistyrose3", "lavenderblush2", "seashell2"
 )
 
-
-
 # Functions
 source("Scripts/helpers.R")
 source("Scripts/run_experiment.R")
@@ -61,6 +57,7 @@ source("Scripts/model_optimisation.R")
 source("Scripts/performance_testing.R")
 source("Scripts/silhouette.R")
 source("Scripts/visualise_features.R")
+source("Scripts/choosing_target_class.R")
 # source("Scripts/analysis.R")
 
 # variables
@@ -80,41 +77,19 @@ boost_methods <- c("Nothing",
                    #"Decomposition"
 )
 
-all_species <- basename(list.dirs("Data", recursive = F))
+all_species <- settings$Species
 
 available_axes <- c("X", "Y", "Z")
 metadata_cols <- c("Activity", "ID", "Time")
 target_col <- "Activity"
-type <- "binary"
+type <- "multiclass"
+
+cut_conditions <- c(1, 0)
 
 # File directory ----------------------------------------------------------
 # for each of the defined species check data exists and create an output folder
-lapply(all_species, function(species){
-  
-  # create the output directory
-  if (!dir.exists(paste0("Output/", species))){
-    dir.create(paste0("Output/", species))
-  }
-  
-  # create where I save the synthetic data
-  if (!dir.exists(paste0("Data/", species, "/Boost"))){
-    dir.create(paste0("Data/", species, "/Boost"))
-  }
-  
-  # and the figures
-  if (!dir.exists(paste0("Output/", species, "/Figures"))){
-    dir.create(paste0("Output/", species, "/Figures"))
-  }
-
-  print("all good")
-})
-
-
-
-
-
-# Delete all files from one or more conditions ----------------------------
-# old_files <- list.files(file.path("Output"), full.names = TRUE, pattern = "ADSYN_", recursive = TRUE)
-# keep_files <- list.files(file.path(base_path, "Data"), pattern = "Formatted_raw_data.csv", full.names = TRUE, recursive = TRUE)
-# file.remove(old_files)
-
+for (species in all_species) {
+  dirs <- c(file.path("Output", species, c("Binary", "Volume", "Figures")),
+            file.path("Data", species, "Boost"))
+  for (d in dirs) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+}

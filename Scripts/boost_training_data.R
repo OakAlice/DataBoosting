@@ -19,7 +19,7 @@ clean_raw_data <- function(training_data, metadata_cols, target_col) {
   return(list(training_data = training_data, feat_cols = clean_cols, y = y, X = X, target_n = target_n))
 }
 
-oversample_minority <- function(feature_data, target_col, minority_classes, target_n){
+oversample_minority <- function(feature_data, target_col, target_class, target_n){
   # literally just duplicate rows from the target class
   # chose to sample it up to the mean (probably roughly half of what the majority class had)
   
@@ -29,7 +29,7 @@ oversample_minority <- function(feature_data, target_col, minority_classes, targ
       cls       <- .y[[target_col]]
       n_current <- nrow(.x)
       
-      if (cls %in% minority_classes && n_current < target_n) {
+      if (cls %in% target_class && n_current < target_n) {
         slice_sample(.x, n = target_n - n_current, replace = TRUE)
       } else {
         .x[0, ]   # zero rows, same columns
@@ -40,38 +40,50 @@ oversample_minority <- function(feature_data, target_col, minority_classes, targ
   return(boosted_data)
 }
 
-smote_minority <- function(training_data, smote_method, metadata_cols, minority_classes, k = NULL){
-  # cant handle NAs so have to clean first
+smote_minority <- function(training_data, smote_method, metadata_cols, target_col,
+                           target_class, k = 5, target_n = NULL) {
+  
+  # cant handle any NAs so have to clean the data first
   cleaned <- clean_raw_data(training_data, metadata_cols, target_col)
-  training_data <- cleaned$training_data
   y <- as.character(cleaned$y)
-  aim <- cleaned$target_n
   X <- as.data.frame(cleaned$X)
   
-  multiplier <- ceiling(round(mean(table(y))) / round(min(table(y))) / 2) # to make it half of the majority
+  counts <- table(y)
+  if (is.null(target_n)) target_n <- ceiling(max(counts) / 2)  # half the majority
   
-  syn <- tryCatch(
-    if (smote_method == "SMOTE") {
-      smotefamily::SMOTE(X = X, target = y, K = k,
-                         dup_size = multiplier) # 0 for the dup_size will balance the majority and minority
-    } else if (smote_method == "ADSYN") {
-      smotefamily::ADAS(X = X, target = y, K = k)
-    },
-    error = function(e) { message(smote_method, " failed: ", e$message); NULL }
-  )
-  if (is.null(syn)) return(NULL)
+  out <- lapply(target_class, function(cls) {
+    n_cls <- counts[[cls]]
+    need  <- target_n - n_cls
+    if (need <= 0 || n_cls < 3) return(NULL)   # already big enough, or too few to interpolate
+    
+    k_use  <- min(k, n_cls - 1)
+    y_bin  <- ifelse(y == cls, cls, "other")   # one-vs-rest so only this class is oversampled
+    
+    syn <- tryCatch(
+      if (smote_method == "SMOTE") {
+        smotefamily::SMOTE(X, y_bin, K = k_use, dup_size = ceiling(need / n_cls))
+      } else if (smote_method == "ADSYN") {
+        smotefamily::ADAS(X, y_bin, K = k_use)
+      },
+      error = function(e) { message(smote_method, " failed for ", cls, ": ", e$message); NULL }
+    )
+    if (is.null(syn)) return(NULL)
+    
+    s <- syn$syn_data[syn$syn_data$class == cls, , drop = FALSE]
+    if (nrow(s) == 0) return(NULL)
+    if (nrow(s) > need) s <- s[sample(nrow(s), need), , drop = FALSE]  # trim to target
+    s
+  })
   
-  synth_data <- syn$syn_data %>% dplyr::filter(class == "target")
+  synth_data <- data.table::rbindlist(out)
   if (nrow(synth_data) == 0) return(NULL)
   
-  synth_data <- synth_data %>%
-    rename(!!target_col := class) %>%
-    mutate(ID = "Synth", Time = NA)
-  
-  return (synth_data)
+  synth_data %>%
+    dplyr::rename(!!target_col := class) %>%
+    dplyr::mutate(ID = "Synth", Time = NA)
 }
 
-noise_minority <- function(training_data, metadata_cols, target_col, minority_classes, sigma_frac = 0.1) {
+noise_minority <- function(training_data, metadata_cols, target_col, target_class, sigma_frac = 0.1) {
   # random noise injection
   
   cleaned <- clean_raw_data(training_data, metadata_cols, target_col)
@@ -82,7 +94,7 @@ noise_minority <- function(training_data, metadata_cols, target_col, minority_cl
   
   target_n <- round(mean(table(y)))
   
-  synth_list <- lapply(intersect(minority_classes, unique(y)), function(cls) {
+  synth_list <- lapply(intersect(target_class, unique(y)), function(cls) {
     X_min    <- X[y == cls, , drop = FALSE]
     n_needed <- target_n - nrow(X_min)
     if (n_needed <= 0) return(NULL)
@@ -106,14 +118,14 @@ noise_minority <- function(training_data, metadata_cols, target_col, minority_cl
   return (boosted_data)
 }
 
-DTW_minority <- function(raw_data, feature_data, target_col, minority_classes, Hz, window_s, n_avg = 3) {
+DTW_minority <- function(raw_data, feature_data, target_col, target_class, Hz, window_s, n_avg = 3) {
   
   axis_cols <- c("X", "Y", "Z") # hardcoded because I am a sloppy ugly coder. also a chud.
   
   win_len  <- window_s * Hz
   target_n <- round(mean(table(feature_data[[target_col]])))
   
-  synth_raw_list <- lapply(minority_classes, function(cls) {
+  synth_raw_list <- lapply(target_class, function(cls) {
     
     n_needed <- target_n - sum(feature_data[[target_col]] == cls)
     if (n_needed <= 0) return(NULL)
@@ -165,7 +177,7 @@ DTW_minority <- function(raw_data, feature_data, target_col, minority_classes, H
 
 
 
-overlap_minority <- function(raw_data, sample_rate, metadata_cols, target_col, minority_classes, overlap_percent) {
+overlap_minority <- function(raw_data, sample_rate, metadata_cols, target_col, target_class, overlap_percent) {
   
   # Window parameters
   window_length <- if (sample_rate > 1) 2 else 5
@@ -193,7 +205,7 @@ overlap_minority <- function(raw_data, sample_rate, metadata_cols, target_col, m
   # thought about doing it if any minority appeared but this is cleaner
   selected <- which(vapply(seq_len(nrow(bounds)), function(i) {
     labels <- raw_data[[target_col]][bounds$start[i]:bounds$end[i]]
-    sum(labels %in% minority_classes) >= max(table(labels))
+    sum(labels %in% target_class) >= max(table(labels))
   }, logical(1)))
   
   # Extract selected windows
@@ -217,7 +229,7 @@ overlap_minority <- function(raw_data, sample_rate, metadata_cols, target_col, m
   bind_rows(features)
 }
 
-decomposition_minority <- function(raw_data, feature_data, target_col, minority_classes,
+decomposition_minority <- function(raw_data, feature_data, target_col, target_class,
                                    Hz, window_s, trend_frac = 0.5, noise_frac = 0.1,
                                    amp_sd = 0.1, axis_cols = c("X", "Y", "Z")) {
   # decompose raw windows into trend / oscillation / residual, mix components
@@ -242,7 +254,7 @@ decomposition_minority <- function(raw_data, feature_data, target_col, minority_
     list(trend = trend, seas = seas, resid = det - seas)
   }
   
-  synth_raw_list <- lapply(intersect(minority_classes, unique(raw_data[[target_col]])), function(cls) {
+  synth_raw_list <- lapply(intersect(target_class, unique(raw_data[[target_col]])), function(cls) {
     
     n_needed <- target_n - sum(feature_data[[target_col]] == cls)
     if (n_needed <= 0) return(NULL)
@@ -290,7 +302,7 @@ decomposition_minority <- function(raw_data, feature_data, target_col, minority_
   return(synth_features)
 }
 
-rotation_minority <- function(raw_data, feature_data, target_col, minority_classes,
+rotation_minority <- function(raw_data, feature_data, target_col, target_class,
                               Hz, window_s, max_angle = 15, rot_axis = NULL,
                               axis_cols = c("X", "Y", "Z")) {
   # rotate real raw windows by small random angles, then compute features
@@ -307,7 +319,7 @@ rotation_minority <- function(raw_data, feature_data, target_col, minority_class
     diag(3) + sin(theta) * K + (1 - cos(theta)) * K %*% K
   }
   
-  synth_raw_list <- lapply(intersect(minority_classes, unique(raw_data[[target_col]])), function(cls) {
+  synth_raw_list <- lapply(intersect(target_class, unique(raw_data[[target_col]])), function(cls) {
     
     n_needed <- target_n - sum(feature_data[[target_col]] == cls)
     if (n_needed <= 0) return(NULL)
@@ -354,13 +366,13 @@ rotation_minority <- function(raw_data, feature_data, target_col, minority_class
 
 
 # main wrapper ------------------------------------------------------------
-boost_training_data <- function(training_data, metadata_cols, target_col, minority_classes, method, Hz = NULL, prior_features = NULL){
+boost_training_data <- function(training_data, metadata_cols, target_col, target_class, method, Hz = NULL, prior_features = NULL){
   #' Function for boosting the minority representation in the training data... I hate this code, so ugly.
   #' Requires input of the raw data and the feature data fml...
   #' training_data: dataframe of training feature data
   #' metadata_cols: string list of the metadata columns
   #' taget_col: string name of the target column
-  #' minority_classes: list of classes (NOTE: only works for a single class at this point)
+  #' target_class: list of classes (NOTE: only works for a single class at this point)
   #' method (Nothing | Oversample | Overlap# | SMOTE | ADSYN | Random_noise | DTW): defined method
   #' Hz: frequency of the sampling 
   #' path_to_features: In case these have already been generated, saves a lot of time. Ugly tho.
@@ -372,24 +384,24 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
     synth_features <- prior_features
     
   } else if (method == "Oversample"){
-    synth_features <- oversample_minority(prior_features, target_col, minority_classes, target_n)
+    synth_features <- oversample_minority(prior_features, target_col, target_class, target_n)
     
   } else if (method == "SMOTE"){
     synth_features <- smote_minority(training_data = prior_features, 
                                      smote_method = "SMOTE", 
-                                     metadata_cols, minority_classes,
+                                     metadata_cols, target_col, target_class,
                                      k = 5)
     
   } else if (method == "ADSYN") {
-    synth_features <- smote_minority(prior_features, smote_method = "ADSYN", metadata_cols, minority_classes)
+    synth_features <- smote_minority(prior_features, smote_method = "ADSYN", metadata_cols, target_col, target_class)
     
   } else if (method == "RandomNoise"){
     synth_features <- noise_minority(training_data = prior_features, 
-                                     metadata_cols, target_col, minority_classes)
+                                     metadata_cols, target_col, target_class)
     
   } else if (method == "Decomposition"){
     synth_features <- decomposition_minority(training_data, prior_features, 
-                                             target_col, minority_classes,
+                                             target_col, target_class,
                                             Hz, window_s = ifelse(Hz > 1, 2, 5), 
                                             trend_frac = 0.5, noise_frac = 0.1, amp_sd = 0.1)
     synth_features <- synth_features %>% mutate(Time = prior_features$Time[1])
@@ -398,7 +410,7 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
     synth_features <- rotation_minority(raw_data = training_data, 
                                         feature_data = prior_features, 
                                         target_col, 
-                                        minority_classes,
+                                        target_class,
                                         Hz, 
                                         window_s = ifelse(Hz > 1, 2, 5),
                                         max_angle = 5)
@@ -409,12 +421,12 @@ boost_training_data <- function(training_data, metadata_cols, target_col, minori
     # NOTE: have put some checks about whether the file exists to just save me time
 
     overlap_percent <- as.numeric(gsub("Overlap", "", method))
-    synth_features <- overlap_minority(training_data, sample_rate = Hz, metadata_cols, target_col, minority_classes, overlap_percent)
+    synth_features <- overlap_minority(training_data, sample_rate = Hz, metadata_cols, target_col, target_class, overlap_percent)
 
   } else if (method == "DTW") {
     synth_features <- DTW_minority(raw_data = training_data, 
                                    feature_data = prior_features, 
-                                   target_col, minority_classes, Hz, 
+                                   target_col, target_class, Hz, 
                                    window_s = ifelse(Hz > 1, 2, 5), 
                                    n_avg = 3) # 1 changes nothing 
     synth_features <- synth_features %>% mutate(Time = prior_features$Time[1])

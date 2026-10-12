@@ -155,11 +155,11 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
       tryCatch({
         
         # weight by class frequency
-        class_freq <- table(training_data$Activity)
-        class_weights <- 1 / class_freq
-        class_weights <- class_weights / sum(class_weights)
-        weight <- class_weights[training_data$Activity]
-        
+        # class_freq <- table(training_data$Activity)
+        # class_weights <- 1 / class_freq
+        # class_weights <- class_weights / sum(class_weights)
+        # weight <- class_weights[training_data$Activity]
+        # 
         # this is added in to prevent the sample fraction too small error
         if (nrow(training_data) < 10 || nlevels(training_data$Activity) < 2) {
           next("Training fold unusable, need to skip")
@@ -174,7 +174,7 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
           sample.fraction = 1, # select all the data (small datasets will fail otherwise)
           classification = TRUE,
           importance = "impurity",
-          case.weights = weight,
+          # case.weights = weight,
           probability = TRUE # generates probabilities - required for AUC-PR etc.
         )
   

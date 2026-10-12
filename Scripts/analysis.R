@@ -2,18 +2,22 @@
 result_files <- list.files("Output", pattern = "_performance_", recursive = TRUE, full.names = TRUE)
 results_df <- lapply(result_files, function(x){
   dat <- fread(x)
-  dat$Species <- basename(dirname(x))
+  dat$Species <- basename(dirname(dirname(x)))
   dat$fold <- str_split(basename(tools::file_path_sans_ext(x)), "_", simplify = TRUE)[[3]]
   dat$method<- str_split(basename(tools::file_path_sans_ext(x)), "_", simplify = TRUE)[[1]]
-  dat$Behaviour <- gsub("Class: ", "", dat$Behaviour)
+  dat$Activity <- gsub("Class: ", "", dat$Behaviour)
   dat
 })
 result_df <- rbindlist(results_df, fill = TRUE)
 result_df$method <- factor(result_df$method, levels = c(
-  "Nothing", "Oversample","Overlap50", "Overlap90", "Rotation", "RandomNoise", 
+  "Nothing", "Oversample","Overlap50", "Overlap90", "Rotation", "RandomNoise",
   "SMOTE", "ADSYN",  "DTW", "Decomposition"))
 
-result_df <- merge(result_df, settings, by.x = "Species", by.y = "species")
+result_df <- merge(result_df, settings, by = "Species", all.x = TRUE)
+
+# add in the labels for what class is what
+result_df <- merge(result_df, target_classes, by = c("Species", "Activity"), all.x = TRUE)
+
 
 
 
@@ -32,7 +36,7 @@ high_performance_species <- result_df %>%
   pull(Species)
 
 summary_df <- result_df %>%
-  group_by(Species, Behaviour, method) %>%
+  group_by(Species, Activity, method, type) %>%
   summarise(
     n = n(),
     chance = mean(Prevalence, na.rm = TRUE),
@@ -42,7 +46,9 @@ summary_df <- result_df %>%
     .groups = "drop"
   ) 
 
-plot_df <- summary_df #%>% dplyr::filter(!Species %in% high_performance_species)
+plot_df <- summary_df %>% 
+  dplyr::filter(type == "Minority")
+  #dplyr::filter(!Species %in% high_performance_species)
 ggplot(plot_df,
        aes(x = method,
            y = mean,
@@ -107,7 +113,7 @@ df1 <- filter(df, method != "Nothing") %>%  #*** New df without "No"
   mutate(method = fct_drop(method)) # Drop unused factor levels
 
 #m1 <- glmmTMB(relative_change ~ method + minorityRatio + (1|Species/fold), data = df1)
-m1 <- glmmTMB(relative_change ~ method + minorityRatio + (1|Species:fold), data = df1)
+m1 <- glmmTMB(relative_change ~ method + (1|Species:fold), data = df1)
 summary(m1) #*** `Mode` is now the base case, and all other estimates are adjustments relative to that. To get adjustments relative to zero, just remove the intercept.
 m1.2 <- update(m1, ~. -1) #*** the `-1` removes the intercept
 summary(m1.2)
@@ -148,3 +154,42 @@ emtrends(m3, ~ method, var = "minorityRatio") |> test(adjust = "holm")
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+volume_metrics <- fread(file.path("Output", species, "Volume", "Performance_metrics.csv"))
+summary <- volume_metrics %>% group_by(Species, Behaviour, prop) %>% 
+  summarise(
+    n = n(),
+    chance = mean(Prevalence, na.rm = TRUE),
+    mean = mean(AUC_PR, na.rm = TRUE),
+    se = sd(AUC_PR, na.rm = TRUE) / sqrt(n),
+    ci = 1.96 * se, # gives us the confidence intervals (I think??)
+    .groups = "drop"
+  ) 
+
+ggplot(summary,
+       aes(x = prop,
+           y = mean,
+           colour = Behaviour,
+           group = Species)) +
+  geom_point(size = 5) +
+  geom_errorbar(aes(ymin = mean - ci,
+                    ymax = mean + ci),
+                linewidth = 1,
+                width = 0.5) +
+  labs(x = "Proportion",
+       y = "Mean AUC-PR") +
+  my_theme() + 
+  scale_colour_manual(values = fave_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
