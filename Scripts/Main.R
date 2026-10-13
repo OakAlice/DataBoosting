@@ -10,30 +10,39 @@ source("Scripts/config.R") # file with all the config infomation for the analysi
 # Determine the target classes --------------------------------------------
 target_classes <- determine_targets(all_species, plot = FALSE) # if plot true makes a bar chart
 
-# Generate the base features ----------------------------------------------
-for (species in all_species) make_base_features(species, settings)
-
-# Silhouette score --------------------------------------------------------
-# for (species in all_species) find_silhouette_scores(all_species, metadata_cols, target_col) 
-
-# Volume (majority) trials ------------------------------------------------
-majority_classes <- target_classes %>% dplyr::filter(type == "Majority")
-# part 1. finding the performance curve
-for (species in all_species) run_volume_experiment(species, settings, majority_classes, cut_conditions, target_col, k = 3)
-
-
-
+# species <- "Galea_Cat"
+# all_species <- setdiff(all_species, "Dickinson_Goat")
+for (species in all_species){
   
-# Boosting trials ---------------------------------------------------------
-minority_classes <- target_classes %>% dplyr::filter(type == "Minority")
-for (species in all_species) run_binary_experiment(species, settings, minority_classes, boost_methods, k = 3)
-# go to the analysis.R file to visualise etc.
+  message(species)
+  
+  # Generate the base features ----------------------------------------------
+  dat <- make_base_features(species, settings)
+
+  # Fit a RF to all the data once -------------------------------------------
+  # this is to determine the optimal hyperparameters rather than refitting every loop
+  hyperparameters <- find_optimal_hyperparameters(species, settings, dat)
+
+  # Silhouette score --------------------------------------------------------
+  # find_silhouette_scores(all_species, metadata_cols, target_col) 
+
+  # Volume (majority) trials ------------------------------------------------
+  majority_classes <- target_classes %>% dplyr::filter(type == "Majority", Species == species) %>% pull(Activity)
+  run_volume_experiment(species, settings, dat, target_class = majority_classes, hyperparameters, cut_conditions, downsample, target_col, k = 2) # must be 2 or more
+  
+  # Boosting trials ---------------------------------------------------------
+  # minority_classes <- target_classes %>% dplyr::filter(type == "Minority", Species == species) %>% pull(Activity)
+  # run_binary_experiment(species, settings, dat, minority_classes, hyperparameters, boost_methods, k = 2) # has to be 2 or more
+
+  # Generate the data for visualisation -------------------------------------
+  # generate_augmented_data(all_species, boost_methods)  
+  
+  
+}
 
 
+  # go to the analysis.R file to visualise etc.
 
-
-# Visualise the synthetic data --------------------------------------------
-for (species in all_species) generate_augmented_data(all_species, boost_methods)
 
 
 

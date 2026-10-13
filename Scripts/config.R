@@ -84,7 +84,8 @@ metadata_cols <- c("Activity", "ID", "Time")
 target_col <- "Activity"
 type <- "multiclass"
 
-cut_conditions <- c(1, 0)
+cut_conditions <- c(1, 5, 10, 25, 100)
+downsample <- "samples" # IDs
 
 # File directory ----------------------------------------------------------
 # for each of the defined species check data exists and create an output folder

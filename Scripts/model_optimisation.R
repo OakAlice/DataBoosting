@@ -1,40 +1,52 @@
 # Master function that builds the model -----------------------------------
-design_build_RF <- function(data, type, metadata_cols){
+design_build_RF <- function(data, type, metadata_cols, hyperparameters = NULL){
   #' Function for optimising the hyperparameters of a random forest ranger model
   #' data: labelled data to be used 
   #' type (binary | multiclass): string of what type of scenario it is
   
-  # Model design: hyperparameter tuning -------------------------------------
-  bounds <- list(
-    mtry = c(2, 20),
-    max_depth = c(5, 30),
-    number_trees = c(100, 1000)
-  )
+  if (is.null(hyperparameters)){
+    # if the hyperparameters dont exist, regenerate them
+      
+    # Model design: hyperparameter tuning -------------------------------------
+    bounds <- list(
+      mtry = c(2, 20),
+      max_depth = c(5, 30),
+      number_trees = c(100, 1000)
+    )
+    
+    # this is optimised for weighted F1 score
+    results <- BayesianOptimization(
+      FUN = function(number_trees, mtry, max_depth) {
+        RFModelOptimisation(
+          feature_data = data,
+          type = type,
+          metadata_cols = metadata_cols,
+          number_trees = number_trees,
+          mtry = mtry,
+          max_depth = max_depth
+        )
+      },
+      bounds = bounds,
+      init_points = 4,
+      n_iter = 6,
+      acq = "ucb",
+      kappa = 2.576 
+    )
+    
+    # extract the best ones
+    best_mtry <- round(results$Best_Par[["mtry"]],0)
+    best_number_trees <- round(results$Best_Par[["number_trees"]],0)
+    best_max_depth <- round(results$Best_Par[["max_depth"]],0)
+    best_performance <- results$Best_Value # just for interest
+    
+    hyperparameters <- c("best_mtry" = best_mtry, "best_number_trees" = best_number_trees, 
+                        "best_max_depth" = best_max_depth, "best_performance" = best_performance)
   
-  # this is optimised for weighted F1 score
-  results <- BayesianOptimization(
-    FUN = function(number_trees, mtry, max_depth) {
-      RFModelOptimisation(
-        feature_data = data,
-        type = type,
-        metadata_cols = metadata_cols,
-        number_trees = number_trees,
-        mtry = mtry,
-        max_depth = max_depth
-      )
-    },
-    bounds = bounds,
-    init_points = 4,
-    n_iter = 6,
-    acq = "ucb",
-    kappa = 2.576 
-  )
-  
-  # extract the best ones
-  best_mtry <- round(results$Best_Par[["mtry"]],0)
-  best_number_trees <- round(results$Best_Par[["number_trees"]],0)
-  best_max_depth <- round(results$Best_Par[["max_depth"]],0)
-  best_performance <- results$Best_Value # just for interest
+  } else {
+    best_mtry <- hyperparameters$value[hyperparameters$parameter == "best_mtry"]
+    best_number_trees <- hyperparameters$value[hyperparameters$parameter == "best_number_trees"]
+    best_max_depth <- hyperparameters$value[hyperparameters$parameter == "best_max_depth"]
+  }
   
   # Train an optimal model --------------------------------------------------
   other_feature_data <- as.data.table(data)
@@ -79,7 +91,8 @@ design_build_RF <- function(data, type, metadata_cols){
   #   )
   # }
   
-  return(RF_model)   
+  return(list(RF_model = RF_model,
+              hyperparameters = hyperparameters))   
 }
 
 # Hyperparameter Optimisation ---------------------------------------------

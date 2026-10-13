@@ -40,29 +40,59 @@ summary_df <- result_df %>%
   summarise(
     n = n(),
     chance = mean(Prevalence, na.rm = TRUE),
-    mean = mean(AUC_PR, na.rm = TRUE),
-    se = sd(AUC_PR, na.rm = TRUE) / sqrt(n),
-    ci = 1.96 * se, # gives us the confidence intervals (I think??)
+    
+    mean_PR = mean(AUC_PR, na.rm = TRUE),
+    se_PR = sd(AUC_PR, na.rm = TRUE) / sqrt(n),
+    ci_PR = 1.96 * se_PR, # gives us the confidence intervals (I think??)
+    
+    mean_F1 = mean(F1, na.rm = TRUE),
+    se_F1 = sd(F1, na.rm = TRUE) / sqrt(n),
+    ci_F1 = 1.96 * se_F1, # gives us the confidence intervals (I think??)
+    
     .groups = "drop"
   ) 
 
 plot_df <- summary_df %>% 
   dplyr::filter(type == "Minority")
   #dplyr::filter(!Species %in% high_performance_species)
+
+
 ggplot(plot_df,
        aes(x = method,
-           y = mean,
+           y = mean_PR,
            colour = method,
            group = Species)) +
   geom_point(size = 5) +
-  geom_errorbar(aes(ymin = mean - ci,
-                    ymax = mean + ci),
+  geom_errorbar(aes(ymin = mean_PR - ci_PR,
+                    ymax = mean_PR + ci_PR),
                 linewidth = 1,
                 width = 0.5) +
   geom_hline(data = plot_df, aes(yintercept = chance),
              linetype = "dashed", colour = "grey30", alpha = 0.7) +
   labs(x = "Boosting Method",
        y = "Mean AUC-PR") +
+  my_theme() + 
+  scale_colour_manual(values = fave_colours) +
+  facet_wrap(~Species, ncol = 3) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+
+
+
+ggplot(plot_df,
+       aes(x = method,
+           y = mean_F1,
+           colour = method,
+           group = Species)) +
+  geom_point(size = 5) +
+  geom_errorbar(aes(ymin = mean_F1 - ci_F1,
+                    ymax = mean_F1 + ci_F1),
+                linewidth = 1,
+                width = 0.5) +
+  geom_hline(data = plot_df, aes(yintercept = chance),
+             linetype = "dashed", colour = "grey30", alpha = 0.7) +
+  labs(x = "Boosting Method",
+       y = "Mean F1") +
   my_theme() + 
   scale_colour_manual(values = fave_colours) +
   facet_wrap(~Species, ncol = 3) +
@@ -167,21 +197,39 @@ emtrends(m3, ~ method, var = "minorityRatio") |> test(adjust = "holm")
 
 
 
-volume_metrics <- fread(file.path("Output", species, "Volume", "Performance_metrics.csv"))
-summary <- volume_metrics %>% group_by(Species, Behaviour, prop) %>% 
+volume_metrics <- list.files("Output", recursive = TRUE, full.names = TRUE, pattern = "Performance_metrics.csv")
+volume_metrics <- lapply(volume_metrics, fread)
+volume_metrics <- rbindlist(volume_metrics, fill = TRUE) %>% rename(Activity = Behaviour)
+
+result_df <- merge(volume_metrics, target_classes, by = c("Species", "Activity"), all.x = TRUE)
+
+
+summary <- result_df %>% group_by(Species, Activity, prop.x, type) %>% 
   summarise(
     n = n(),
-    chance = mean(Prevalence, na.rm = TRUE),
-    mean = mean(AUC_PR, na.rm = TRUE),
-    se = sd(AUC_PR, na.rm = TRUE) / sqrt(n),
+    
+    mean = mean(Norm_AUC_PR, na.rm = TRUE),
+    se = sd(Norm_AUC_PR, na.rm = TRUE) / sqrt(n),
     ci = 1.96 * se, # gives us the confidence intervals (I think??)
+    
+    prev = mean(train_prev, na.rm = TRUE),
+    se_prev = sd(train_prev, na.rm = TRUE),
+    ci_prev = 1.96 * se_prev, 
+    
+    F1 = mean(F1, na.rm = TRUE),
+    se_F1 = sd(F1, na.rm = TRUE),
+    ci_F1 = 1.96 * se_F1, 
+
     .groups = "drop"
   ) 
 
+summary <- summary %>% dplyr::filter(!Species == "Yu_Duck",
+                                     type == "Majority")
+
 ggplot(summary,
-       aes(x = prop,
+       aes(x = prop.x,
            y = mean,
-           colour = Behaviour,
+           colour = Activity,
            group = Species)) +
   geom_point(size = 5) +
   geom_errorbar(aes(ymin = mean - ci,
@@ -189,7 +237,44 @@ ggplot(summary,
                 linewidth = 1,
                 width = 0.5) +
   labs(x = "Proportion",
-       y = "Mean AUC-PR") +
+       y = "Mean Normalised AUC-PR") +
   my_theme() + 
-  scale_colour_manual(values = fave_colours) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  scale_colour_manual(values = more_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  facet_wrap(~Species)
+
+
+ggplot(summary,
+       aes(x = prop.x,
+           y = F1,
+           colour = Activity,
+           group = Species)) +
+  geom_point(size = 5) +
+  geom_errorbar(aes(ymin = F1 - ci_F1,
+                    ymax = F1 + ci_F1),
+                linewidth = 1,
+                width = 0.5) +
+  labs(x = "Proportion",
+       y = "F1") +
+  my_theme() + 
+  scale_colour_manual(values = more_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  facet_wrap(~Species)
+
+
+ggplot(summary,
+       aes(x = prop.x,
+           y = prev,
+           colour = Activity,
+           group = Species)) +
+  geom_point(size = 5) +
+  geom_errorbar(aes(ymin = prev - ci_prev,
+                    ymax = prev + ci_prev),
+                linewidth = 1,
+                width = 0.5) +
+  labs(x = "Proportion",
+       y = "Prevalnence") +
+  my_theme() + 
+  scale_colour_manual(values = more_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  facet_wrap(~Species)

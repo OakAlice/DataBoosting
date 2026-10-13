@@ -72,6 +72,9 @@ compute_metrics <- function(predicted_classes, ground_truth_labels, type = c("mu
     metrics$AUC_PR  <- aucs["pr", ]
   }
   
+  # add the normalsoied as well
+  metrics$Norm_AUC_PR <- (metrics$AUC_PR - metrics$Prevalence)/(1 - metrics$Prevalence)
+  
   if (type == "multiclass") {
     # Add prevalence weighted metrics as the last row
     total_counts <- sum(metrics$Prevalence, na.rm = TRUE)
@@ -91,6 +94,7 @@ compute_metrics <- function(predicted_classes, ground_truth_labels, type = c("mu
     if (!is.null(probabilities)) {
       overall_metrics$AUC_ROC <- wmean(metrics$AUC_ROC)
       overall_metrics$AUC_PR  <- wmean(metrics$AUC_PR)
+      overall_metrics$Norm_AUC_PR  <- wmean(metrics$Norm_AUC_PR)
     }
     
     # columns not summarised overall (Sensitivity, Specificity, etc.) -> NA so rbind works
