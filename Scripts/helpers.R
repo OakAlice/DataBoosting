@@ -61,3 +61,52 @@ reset_everything <- function() {
   file.remove(delete_files) %>% invisible()
 }
 
+
+
+
+
+
+
+
+subset_train_data <- function(downsample, other, target, test_IDs, cut){
+  
+  pool <- target %>% dplyr::filter(!ID %in% test_IDs)
+  
+  if (downsample == "samples"){
+    
+    n_total <- ceiling(nrow(pool) * (cut/100))
+    
+    alloc <- pool %>%
+      dplyr::count(ID, name = "n_orig") %>%
+      mutate(exact  = n_orig / sum(n_orig) * n_total,
+             n_take = floor(exact),
+             n_take = n_take + (rank(-(exact - n_take), ties.method = "first") <= n_total - sum(n_take)),
+             n_take = pmin(n_take, n_orig))
+    
+    target_train <- pool %>%
+      left_join(dplyr::select(alloc, ID, n_take), by = "ID") %>%
+      group_by(ID) %>%
+      dplyr::slice(sample.int(dplyr::n(), dplyr::first(n_take))) %>%
+      ungroup() %>%
+      dplyr::select(-n_take)
+    
+    train <- bind_rows(other %>% dplyr::filter(!ID %in% test_IDs), target_train)
+    
+  } else {
+    # this is by ID... removing IDs
+    # retain only subsample% of the training individuals that have the target class
+    
+    target_IDs <- unique(pool$ID)
+    n_keep     <- max(1, ceiling(length(target_IDs) * cut/ 100))
+    keep_IDs   <- sample(target_IDs, n_keep)
+    
+    target_train <- pool %>% dplyr::filter(ID %in% keep_IDs)
+    
+    # other classes from the dropped individuals stay in training, so only the
+    # target class is reduced
+    train <- bind_rows(other %>% dplyr::filter(!ID %in% test_IDs), target_train)
+  }
+  
+  return(train)
+}
+

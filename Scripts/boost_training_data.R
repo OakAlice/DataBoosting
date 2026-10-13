@@ -53,15 +53,22 @@ smote_minority <- function(training_data, smote_method, metadata_cols, target_co
   
   out <- lapply(target_class, function(cls) {
     n_cls <- counts[[cls]]
-    need  <- target_n - n_cls
-    if (need <= 0 || n_cls < 3) return(NULL)   # already big enough, or too few to interpolate
+    have     <- sum(feature_data[[target_col]] == cls)
+    n_needed <- target_n - have
+    
+    # class already at or above the mean: add extra_prop of its current count instead
+    if (n_needed <= 0) n_needed <- ceiling(extra_prop * have)
+    
+    message("class ", cls, ": have = ", have, ", target_n = ", target_n, ", adding = ", n_needed)
+    if (n_needed <= 0) return(NULL)   # only when the class has 0 windows
+    
     
     k_use  <- min(k, n_cls - 1)
     y_bin  <- ifelse(y == cls, cls, "other")   # one-vs-rest so only this class is oversampled
     
     syn <- tryCatch(
       if (smote_method == "SMOTE") {
-        smotefamily::SMOTE(X, y_bin, K = k_use, dup_size = ceiling(need / n_cls))
+        smotefamily::SMOTE(X, y_bin, K = k_use, dup_size = ceiling(n_needed / n_cls))
       } else if (smote_method == "ADSYN") {
         smotefamily::ADAS(X, y_bin, K = k_use)
       },
@@ -71,7 +78,7 @@ smote_minority <- function(training_data, smote_method, metadata_cols, target_co
     
     s <- syn$syn_data[syn$syn_data$class == cls, , drop = FALSE]
     if (nrow(s) == 0) return(NULL)
-    if (nrow(s) > need) s <- s[sample(nrow(s), need), , drop = FALSE]  # trim to target
+    if (nrow(s) > n_needed) s <- s[sample(nrow(s), n_needed), , drop = FALSE]  # trim to target
     s
   })
   
@@ -127,8 +134,15 @@ DTW_minority <- function(raw_data, feature_data, target_col, target_class, Hz, w
   
   synth_raw_list <- lapply(target_class, function(cls) {
     
-    n_needed <- target_n - sum(feature_data[[target_col]] == cls)
-    if (n_needed <= 0) return(NULL)
+    have     <- sum(feature_data[[target_col]] == cls)
+    n_needed <- target_n - have
+    
+    # class already at or above the mean: add extra_prop of its current count instead
+    if (n_needed <= 0) n_needed <- ceiling(extra_prop * have)
+    
+    message("class ", cls, ": have = ", have, ", target_n = ", target_n, ", adding = ", n_needed)
+    if (n_needed <= 0) return(NULL)   # only when the class has 0 windows
+    
     
     # non-overlapping raw windows of this class, within contiguous runs per ID
     cls_windows <- raw_data %>%
@@ -166,10 +180,11 @@ DTW_minority <- function(raw_data, feature_data, target_col, target_class, Hz, w
   synth_raw <- bind_rows(synth_raw_list)
   if (nrow(synth_raw) == 0) return(feature_data)
   
-  synth_features <- generate_features_master(data = synth_raw,
+  res <- generate_features_master(data = synth_raw,
                                              sample_rate = Hz,
                                              overlap_setting = 0,
                                              window_setting  = window_s)
+  synth_features <- res$features
   synth_features$ID <- "Synth" # so they dont get mixed in with the real data
 
   return(synth_features)
@@ -216,7 +231,7 @@ overlap_minority <- function(raw_data, sample_rate, metadata_cols, target_col, t
   # Generate features
   features <- lapply(raw_windows, function(window) {
     
-    process_features_per_chunk(
+    res <- process_features_per_chunk(
       as.data.table(window),
       features_type = c("timeseries", "statistical"),
       window_length = window_length,
@@ -224,6 +239,7 @@ overlap_minority <- function(raw_data, sample_rate, metadata_cols, target_col, t
       overlap_percent = overlap_percent,
       available_axes = available_axes
     )
+    res$features
   })
   
   bind_rows(features)
@@ -256,8 +272,15 @@ decomposition_minority <- function(raw_data, feature_data, target_col, target_cl
   
   synth_raw_list <- lapply(intersect(target_class, unique(raw_data[[target_col]])), function(cls) {
     
-    n_needed <- target_n - sum(feature_data[[target_col]] == cls)
-    if (n_needed <= 0) return(NULL)
+    have     <- sum(feature_data[[target_col]] == cls)
+    n_needed <- target_n - have
+    
+    # class already at or above the mean: add extra_prop of its current count instead
+    if (n_needed <= 0) n_needed <- ceiling(extra_prop * have)
+    
+    message("class ", cls, ": have = ", have, ", target_n = ", target_n, ", adding = ", n_needed)
+    if (n_needed <= 0) return(NULL)   # only when the class has 0 windows
+    
     
     # non-overlapping raw windows of this class, within contiguous runs per ID
     cls_windows <- raw_data %>%
@@ -294,10 +317,11 @@ decomposition_minority <- function(raw_data, feature_data, target_col, target_cl
   synth_raw <- bind_rows(synth_raw_list)
   if (nrow(synth_raw) == 0) return(NULL)
   
-  synth_features <- generate_features_master(data = synth_raw,
+  res <- generate_features_master(data = synth_raw,
                                              sample_rate = Hz,
                                              overlap_setting = 0,
                                              window_setting  = window_s)
+  synth_features <- res$features
   synth_features$ID <- "Synth"
   return(synth_features)
 }
@@ -321,8 +345,14 @@ rotation_minority <- function(raw_data, feature_data, target_col, target_class,
   
   synth_raw_list <- lapply(intersect(target_class, unique(raw_data[[target_col]])), function(cls) {
     
-    n_needed <- target_n - sum(feature_data[[target_col]] == cls)
-    if (n_needed <= 0) return(NULL)
+    have     <- sum(feature_data[[target_col]] == cls)
+    n_needed <- target_n - have
+    
+    # class already at or above the mean: add extra_prop of its current count instead
+    if (n_needed <= 0) n_needed <- ceiling(extra_prop * have)
+    
+    message("class ", cls, ": have = ", have, ", target_n = ", target_n, ", adding = ", n_needed)
+    if (n_needed <= 0) return(NULL)   # only when the class has 0 windows
     
     # non-overlapping raw windows of this class, within contiguous runs per ID
     cls_windows <- raw_data %>%
@@ -356,10 +386,12 @@ rotation_minority <- function(raw_data, feature_data, target_col, target_class,
   synth_raw <- bind_rows(synth_raw_list)
   if (nrow(synth_raw) == 0) return(NULL)
   
-  synth_features <- generate_features_master(data = synth_raw,
+  res <- generate_features_master(data = synth_raw,
                                              sample_rate = Hz,
                                              overlap_setting = 0,
                                              window_setting  = window_s)
+  synth_features <- res$features
+  
   synth_features$ID <- "Synth"
   return(synth_features)
 }
@@ -414,6 +446,7 @@ boost_training_data <- function(training_data, metadata_cols, target_col, target
                                         Hz, 
                                         window_s = ifelse(Hz > 1, 2, 5),
                                         max_angle = 5)
+    
     synth_features <- synth_features %>% mutate(Time = prior_features$Time[1])
     
   } else if (grepl("Overlap", method, fixed = TRUE)){

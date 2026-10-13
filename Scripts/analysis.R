@@ -204,7 +204,7 @@ volume_metrics <- rbindlist(volume_metrics, fill = TRUE) %>% rename(Activity = B
 result_df <- merge(volume_metrics, target_classes, by = c("Species", "Activity"), all.x = TRUE)
 
 
-summary <- result_df %>% group_by(Species, Activity, prop.x, type) %>% 
+summary <- result_df %>% group_by(Species, method, Activity, prop.x, type) %>% 
   summarise(
     n = n(),
     
@@ -223,15 +223,14 @@ summary <- result_df %>% group_by(Species, Activity, prop.x, type) %>%
     .groups = "drop"
   ) 
 
-summary <- summary %>% dplyr::filter(!Species == "Yu_Duck",
-                                     type == "Majority")
+summary <- summary %>% dplyr::filter(type == "Majority")
 
 ggplot(summary,
        aes(x = prop.x,
            y = mean,
-           colour = Activity,
+           colour = method,
            group = Species)) +
-  geom_point(size = 5) +
+  geom_point(size = 5, alpha = 1) +
   geom_errorbar(aes(ymin = mean - ci,
                     ymax = mean + ci),
                 linewidth = 1,
@@ -239,7 +238,7 @@ ggplot(summary,
   labs(x = "Proportion",
        y = "Mean Normalised AUC-PR") +
   my_theme() + 
-  scale_colour_manual(values = more_colours) +
+  scale_colour_manual(values = fave_colours) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
   facet_wrap(~Species)
 
@@ -247,7 +246,7 @@ ggplot(summary,
 ggplot(summary,
        aes(x = prop.x,
            y = F1,
-           colour = Activity,
+           colour = method,
            group = Species)) +
   geom_point(size = 5) +
   geom_errorbar(aes(ymin = F1 - ci_F1,
@@ -257,9 +256,9 @@ ggplot(summary,
   labs(x = "Proportion",
        y = "F1") +
   my_theme() + 
-  scale_colour_manual(values = more_colours) +
+  scale_colour_manual(values = fave_colours) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  facet_wrap(~Species)
+  facet_wrap(~method)
 
 
 ggplot(summary,

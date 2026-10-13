@@ -69,10 +69,10 @@ boost_methods <- c("Nothing",
                    "Oversample",
                    "Overlap50",
                    "Overlap90",
-                   "RandomNoise",
-                   "Rotation",
-                   "SMOTE",
-                   "ADSYN" #,
+                   "RandomNoise" #,
+                   # "Rotation",
+                   # "SMOTE",
+                   # "ADSYN" #,
                    #"DTW",
                    #"Decomposition"
 )
@@ -80,7 +80,7 @@ boost_methods <- c("Nothing",
 all_species <- settings$Species
 
 available_axes <- c("X", "Y", "Z")
-metadata_cols <- c("Activity", "ID", "Time")
+metadata_cols <- c("Activity", "ID", "Time", "win_id")
 target_col <- "Activity"
 type <- "multiclass"
 

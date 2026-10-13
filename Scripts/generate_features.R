@@ -2,28 +2,24 @@
 
 generate_features_master <- function(data, sample_rate, overlap_setting, window_setting){
   
+  data <- as.data.table(data)
+  data <- copy(data)[, row_id := .I]      # copy so the caller's raw_data isn't modified
+  
   available_axes <- c("X", "Y", "Z")
+  feats <- list(); keys <- list()
   
-  generated_features <- list()
   for (id in unique(data$ID)){
-    
-    data1 <- data %>% 
-      dplyr::filter(ID == id) %>% 
-      as.data.table()
-    
-    feature_data <- process_features_per_chunk(data1, 
-                                     features_type = c("timeseries", "statistical"), 
-                                     window_length = window_setting, 
-                                     sample_rate = sample_rate, 
-                                     overlap_percent = overlap_setting,
-                                     available_axes = available_axes
-    )
-    
-    generated_features[[id]] <- feature_data
+    res <- process_features_per_chunk(data[ID == id],
+                                      features_type = c("timeseries", "statistical"),
+                                      window_length = window_setting,
+                                      sample_rate = sample_rate,
+                                      overlap_percent = overlap_setting,
+                                      available_axes = available_axes)
+    feats[[id]] <- res$features
+    keys[[id]]  <- res$key
   }
-  generated_features_df <- bind_rows(generated_features)
   
-  return(generated_features_df) 
+  list(features = rbindlist(feats), key = rbindlist(keys))
 }
 
 # Function to process data for each ID
@@ -35,7 +31,7 @@ process_features_per_chunk <- function(raw_data, features_type = c("statistical"
   spw  <- as.integer(window_length * sample_rate)
   step <- max(1L, as.integer(round(spw * (1 - overlap_percent / 100))))
   n    <- nrow(raw_data)
-  if (n < spw) return(data.table())
+  if (n < spw) return(list(features = data.table(), key = data.table()))
   
   nwin   <- (n - spw) %/% step + 1L              # complete windows only
   starts <- (seq_len(nwin) - 1L) * step + 1L
@@ -87,7 +83,10 @@ process_features_per_chunk <- function(raw_data, features_type = c("statistical"
   out$minVDBA <- colMins(vdba);  out$maxVDBA <- colMaxs(vdba)
   
   # window metadata
-  meta <- list(Time = raw_data$Time[starts], ID = raw_data$ID[starts], Activity = NA_character_)
+  win_ids <- paste0(raw_data$ID[1], "_", seq_len(nwin))
+  meta <- list(win_id = win_ids, Time = raw_data$Time[starts],
+               ID = raw_data$ID[starts], Activity = NA_character_)
+  
   if ("Activity" %in% names(raw_data)) {
     f      <- factor(raw_data$Activity)
     am     <- win(as.integer(f))
@@ -95,5 +94,8 @@ process_features_per_chunk <- function(raw_data, features_type = c("statistical"
     meta$Activity <- levels(f)[max.col(counts, ties.method = "first")]
   }
   
-  as.data.table(c(meta, out))
+  key <- data.table(row_id = raw_data$row_id[as.vector(idx)],
+                    win_id = rep(win_ids, each = spw))
+  
+  list(features = as.data.table(c(meta, out)), key = key)
 }

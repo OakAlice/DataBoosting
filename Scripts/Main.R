@@ -12,6 +12,8 @@ target_classes <- determine_targets(all_species, plot = FALSE) # if plot true ma
 
 # species <- "Galea_Cat"
 # all_species <- setdiff(all_species, "Dickinson_Goat")
+
+all_species <- c("Dickinson_Goat")
 for (species in all_species){
   
   message(species)
@@ -28,7 +30,7 @@ for (species in all_species){
 
   # Volume (majority) trials ------------------------------------------------
   majority_classes <- target_classes %>% dplyr::filter(type == "Majority", Species == species) %>% pull(Activity)
-  run_volume_experiment(species, settings, dat, target_class = majority_classes, hyperparameters, cut_conditions, downsample, target_col, k = 2) # must be 2 or more
+  run_volume_experiment(species, settings, dat, target_class = majority_classes, hyperparameters, boost_methods, cut_conditions, downsample, target_col, k = 2) # must be 2 or more
   
   # Boosting trials ---------------------------------------------------------
   # minority_classes <- target_classes %>% dplyr::filter(type == "Minority", Species == species) %>% pull(Activity)
