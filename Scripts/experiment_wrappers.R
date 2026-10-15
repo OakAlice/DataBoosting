@@ -39,7 +39,7 @@ prepare_species_data <- function(cfg) {
   # overlap = 0, so each raw row is in at most one window and the key can sit on raw
   raw_data[key, on = "row_id", win_id := i.win_id]
   
-  list(raw = raw_data, features = feature_data, key = key, feature_path = feature_path)
+  list(raw = raw_data, features = feature_data, key = key)
 }
 
 
@@ -107,64 +107,98 @@ make_base_features <- function(species, settings){
 
 
 
-run_volume_experiment <- function(species, settings, dat, target_class, hyperparameters, boost_methods, cut_conditions, downsample, target_col, k){
+run_majority_trials <- function(species, Hz, raw_data, features, target_class, model_type, hyperparameters, boost_methods, cut_conditions, stratification, k){
+  #' Wrapper function for trials downsampling and then augmenting the majority class
+  #' 
+  #' species: key name
+  #' Hz (int): Sampling frequency
+  #' raw_data: raw data
+  #' features: precomputed features
+  #' target_class: the class that is being stratificationd and then augmented
+  #' model_type (RF | LDA): Which machine learning model architecture to use
+  #' hyperparamters: settings for the model
+  #' boost_methods: Augmentation methods to trial
+  #' cut_conditions: which percentages of the target class to retain
+  #' stratification (random | IDs | bouts): by which variable to stratify the cut
+  #' k: fold replications (must be 2 or more)
   
-  ID_groups <- make_ID_groups(dat$features, target_col = target_col, k = k,
-                              priority_classes = target_class)
+  # set up for the experiment 
+  ID_groups <- make_ID_groups(features, target_col = target_col, k = k, priority_classes = target_class)
+  grid <- expand.grid(subsample = cut_conditions, method = boost_methods, stringsAsFactors = FALSE)
+  out_dir <- file.path("Output", species, "Volume")
   
-  grid <- expand.grid(fold = seq_len(k), subsample = cut_conditions, method = boost_methods,
-                      stringsAsFactors = FALSE)
-
-  # subset the data
-  other  <- dat$features %>% dplyr::filter(.data[[target_col]] != target_class)
-  target <- dat$features %>% dplyr::filter(.data[[target_col]] == target_class)
-  
-  all_metrics <- list()
-  for (j in seq_len(nrow(grid))) {
-    message(species, " | ", grid$subsample[j], "% | ", grid$method[j], " | fold ", grid$fold[j])
-    
-    # held-out individuals for this fold
-    test_IDs <- ID_groups$ID[ID_groups$group == grid$fold[j]]
-   
-    test  <- dat$features %>% dplyr::filter(ID %in% test_IDs)
-    
-    # this pulls out the feature data I want to use
-    train <- subset_train_data(downsample, other, target, test_IDs, grid$subsample[j])
-    # I then need to match it to the right raw data... 
-    raw_data <- dat$raw[win_id %in% train$win_id]
-    
-    # and now boost the sampled training data...
-    boosted <- boost_training_data(
-      training_data    = dplyr::filter(raw_data, !ID %in% test_IDs),
-      metadata_cols, target_col, target_class,
-      method           = grid$method[j],
-      Hz               = settings$Hz[settings$Species == species],
-      prior_features   = dplyr::filter(train, !ID %in% test_IDs)
-    )
-    
-    # and now see how it performs
-    output <- design_build_RF(train, type = "multiclass", metadata_cols, hyperparameters)
-    metrics <- test_model(type = "multiclass", 
-                          output$RF_model,
-                          test_data = test,
-                          metadata_cols, 
-                          target_col)
-    
-    train_prev <- mean(train[[target_col]] == target_class)
-    test_prev  <- mean(test[[target_col]]  == target_class)
-    
-    # record the training prevalnce as well
-    all_metrics[[j]] <- metrics$metrics %>%
-      mutate(prop = grid$subsample[j], Species = species, fold = grid$fold[j], method = grid$method[j],
-             train_prev = train_prev,
-             test_prev  = test_prev,
-             n_target_train = nrow(train),
-             n_target_IDs   = dplyr::n_distinct(train$ID))
-    
+  # figuring out the prevalance of each class...
+  prev_tbl <- function(x, nm, lv) {
+    tibble(class = lv,
+           !!nm := as.numeric(prop.table(table(factor(x$Activity, levels = lv)))))
   }
   
+  all_metrics <- vector("list", nrow(grid))
+  for (j in seq_len(nrow(grid))) {
+    message(species, " | ", grid$subsample[j], "% | ", grid$method[j])
+    
+    path <- file.path(out_dir, paste0(grid$subsample[j], "_", grid$method[j], ".csv"))
+    if (file.exists(path)){
+      message("This combination has been completed")
+      all_metrics[[j]] <- fread(path)   # keep it for the final save
+      next
+    }
+    
+    fold_metrics <- vector("list", k)
+    for (f in seq_len(k)){ # this is the k number of folds (reps) -> must be greater than 2
+      # held-out individuals for this fold (will not be augmented)
+      test_IDs <- ID_groups$ID[ID_groups$group == f]
+      test_features <- features %>% dplyr::filter(ID %in% test_IDs)
+      
+      # pulling out the training data and subsampling it to the cut_condition
+      train <- features %>% dplyr::filter(!ID %in% test_IDs)
+      selected_features <- subset_target_data(stratification, train, test_IDs, cut = grid$subsample[j], target_class)
+      # and then match it to the right raw data... (this is messy but I need for some methods)
+      selected_raw <- raw_data[win_id %in% unique(selected_features$win_id)]
+      
+      # and now boost the sampled training data...
+      boosted <- boost_training_data(
+        raw_data = selected_raw,
+        feature_data = selected_features,
+        metadata_cols, target_class,
+        method = grid$method[j],
+        Hz
+      )
+      
+      # and now see how it performs
+      output <- design_build_RF(data = boosted$boosted_data, type = "multiclass", metadata_cols, hyperparameters)
+      metrics <- test_model(type = "multiclass", 
+                            output$RF_model,
+                            test_data = test_features,
+                            metadata_cols)
+      
+      lv <- sort(unique(as.character(c(selected_features$Activity, boosted$boosted_data$Activity, test_features$Activity))))
+      
+      prev <- prev_tbl(selected_features, "train_prev", lv) %>%
+        left_join(prev_tbl(boosted$boosted_data, "boost_prev", lv), by = "class") %>%
+        left_join(prev_tbl(test_features, "test_prev", lv), by = "class")
+      
+      fold_metrics[[f]] <- metrics$metrics %>%
+        mutate(class = as.character(Behaviour)) %>%
+        left_join(prev, by = "class") %>%
+        mutate(prop    = grid$subsample[j],
+               Species = species,
+               fold    = f,
+               method  = grid$method[j])
+    }
+    
+    # save these metrics temporarily (takes a long time to run and I want to save as I go)
+    # this is ugly but means I save progress 
+    all_metrics[[j]] <- rbindlist(fold_metrics)
+    tmp <- paste0(path, ".tmp")
+    fwrite(all_metrics[[j]], tmp)
+    file.rename(tmp, path)   # a crash mid-write can't leave a partial file that counts as "completed"
+  }
+  
+  # but then fo a final save as well for neatness sake
   all_metrics <- rbindlist(all_metrics)
-  fwrite(all_metrics, file.path("Output", species, "Volume", "Performance_metrics.csv"))
+  fwrite(all_metrics, file.path(out_dir, "Performance_metrics.csv"))
+  all_metrics
 }
 
 

@@ -1,3 +1,92 @@
+# Quick and dirty analysis of the results ---------------------------------
+# very preliminary at this stage
+
+volume_metrics <- list.files("Output", recursive = TRUE, full.names = TRUE)
+volume_metrics <- lapply(volume_metrics, fread)
+volume_metrics <- rbindlist(volume_metrics, fill = TRUE) %>% rename(Activity = Behaviour)
+
+result_df <- merge(volume_metrics, target_classes, by = c("Species", "Activity"), all.x = TRUE)
+
+summary <- result_df %>%
+  group_by(Species, method, Activity, prop.x, type) %>%
+  summarise(
+    n = n(),
+    
+    mean = mean(Norm_AUC_PR, na.rm = TRUE),
+    se   = sd(Norm_AUC_PR, na.rm = TRUE) / sqrt(n),
+    ci   = 1.96 * se,
+    
+    prev    = mean(boost_prev, na.rm = TRUE),
+    se_prev = sd(boost_prev, na.rm = TRUE) / sqrt(n),
+    ci_prev = 1.96 * se_prev,
+    
+    mean_F1 = mean(F1, na.rm = TRUE),
+    se_F1   = sd(F1, na.rm = TRUE) / sqrt(n),
+    ci_F1   = 1.96 * se_F1,
+    
+    .groups = "drop"
+  )
+
+summary <- summary %>% dplyr::filter(type == "Majority") %>%
+  mutate(method = factor(method, levels = c(boost_methods)))
+
+
+# Plots -------------------------------------------------------------------
+ggplot(summary,
+       aes(x = prop.x, y = mean_F1, colour = method, group = method)) +
+  geom_path(linewidth = 1, alpha = 0.5) +
+  geom_point(data = ~ filter(.x, method != "Nothing"), size = 5, alpha = 0.7) +
+  geom_errorbar(aes(ymin = mean_F1 - ci_F1, ymax = mean_F1 + ci_F1),
+                linewidth = 1, width = 0.5) +
+  geom_point(data = ~ filter(.x, method == "Nothing"),
+             shape = 8, colour = "black", size = 3, stroke = 1) +
+  labs(x = "Percentage of retained bouts (%)", y = "F1") +
+  my_theme() +
+  scale_colour_manual(values = methods_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  facet_wrap(~Species)
+
+
+# And trying do do some stats ---------------------------------------------
+# code copied from the postprocessing chapter analysis that dave helped with
+
+# this is the control condition
+baseline <- result_df %>%
+  filter(method == "Nothing") %>%
+  select(Species, fold, prop.x, baseline = F1)
+
+# and then results relative to the control
+df <- result_df %>%
+  dplyr::filter(Activity == target_class) %>%
+  left_join(baseline, by = c("Species", "fold", "prop.x")) %>%
+  mutate(relative_change = F1 - baseline,
+         sp_rep = str_c(Species, "_", fold), #*** Reusing factor levels in random effects can cause issues, so I create unique factor levels...
+         across(where(is.character), as.factor)) #*** I'd make everything that is still character into a factor, too
+
+# remove no
+df1 <- filter(df, method != "Nothing") %>%  #*** New df without "No"
+  mutate(method = fct_drop(method)) # Drop unused factor levels
+
+#m1 <- glmmTMB(relative_change ~ method + minorityRatio + (1|Species/fold), data = df1)
+m1 <- glmmTMB(relative_change ~ method + (1|Species:fold), data = df1)
+summary(m1) #*** `Mode` is now the base case, and all other estimates are adjustments relative to that. To get adjustments relative to zero, just remove the intercept.
+m1.2 <- update(m1, ~. -1) #*** the `-1` removes the intercept
+summary(m1.2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # just very basic for now
 result_files <- list.files("Output", pattern = "_performance_", recursive = TRUE, full.names = TRUE)
 results_df <- lapply(result_files, function(x){
@@ -185,95 +274,3 @@ emtrends(m3, ~ method, var = "minorityRatio") |> test(adjust = "holm")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-volume_metrics <- list.files("Output", recursive = TRUE, full.names = TRUE, pattern = "Performance_metrics.csv")
-volume_metrics <- lapply(volume_metrics, fread)
-volume_metrics <- rbindlist(volume_metrics, fill = TRUE) %>% rename(Activity = Behaviour)
-
-result_df <- merge(volume_metrics, target_classes, by = c("Species", "Activity"), all.x = TRUE)
-
-
-summary <- result_df %>% group_by(Species, method, Activity, prop.x, type) %>% 
-  summarise(
-    n = n(),
-    
-    mean = mean(Norm_AUC_PR, na.rm = TRUE),
-    se = sd(Norm_AUC_PR, na.rm = TRUE) / sqrt(n),
-    ci = 1.96 * se, # gives us the confidence intervals (I think??)
-    
-    prev = mean(train_prev, na.rm = TRUE),
-    se_prev = sd(train_prev, na.rm = TRUE),
-    ci_prev = 1.96 * se_prev, 
-    
-    F1 = mean(F1, na.rm = TRUE),
-    se_F1 = sd(F1, na.rm = TRUE),
-    ci_F1 = 1.96 * se_F1, 
-
-    .groups = "drop"
-  ) 
-
-summary <- summary %>% dplyr::filter(type == "Majority")
-
-ggplot(summary,
-       aes(x = prop.x,
-           y = mean,
-           colour = method,
-           group = Species)) +
-  geom_point(size = 5, alpha = 1) +
-  geom_errorbar(aes(ymin = mean - ci,
-                    ymax = mean + ci),
-                linewidth = 1,
-                width = 0.5) +
-  labs(x = "Proportion",
-       y = "Mean Normalised AUC-PR") +
-  my_theme() + 
-  scale_colour_manual(values = fave_colours) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  facet_wrap(~Species)
-
-
-ggplot(summary,
-       aes(x = prop.x,
-           y = F1,
-           colour = method,
-           group = Species)) +
-  geom_point(size = 5) +
-  geom_errorbar(aes(ymin = F1 - ci_F1,
-                    ymax = F1 + ci_F1),
-                linewidth = 1,
-                width = 0.5) +
-  labs(x = "Proportion",
-       y = "F1") +
-  my_theme() + 
-  scale_colour_manual(values = fave_colours) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  facet_wrap(~method)
-
-
-ggplot(summary,
-       aes(x = prop.x,
-           y = prev,
-           colour = Activity,
-           group = Species)) +
-  geom_point(size = 5) +
-  geom_errorbar(aes(ymin = prev - ci_prev,
-                    ymax = prev + ci_prev),
-                linewidth = 1,
-                width = 0.5) +
-  labs(x = "Proportion",
-       y = "Prevalnence") +
-  my_theme() + 
-  scale_colour_manual(values = more_colours) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  facet_wrap(~Species)

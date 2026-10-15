@@ -48,16 +48,31 @@ more_colours <- c(
   "mistyrose3", "lavenderblush2", "seashell2"
 )
 
+methods_colours <- c(
+  "Nothing" = "darkslategrey",
+  "Oversample" = "firebrick3",
+  "Overlap50" = "coral", 
+  "Overlap90" = "goldenrod2", 
+  "RandomNoise" = "khaki2", 
+  "Rotation" = "aquamarine3", 
+  "SMOTE" = "darkcyan", 
+  "ADSYN" = "powderblue", 
+  "Decomposition" = "slateblue2", 
+  "DTW" = "plum"
+  )
+
+
+
 # Functions
 source("Scripts/helpers.R")
-source("Scripts/run_experiment.R")
+source("Scripts/choosing_target_class.R")
+source("Scripts/experiment_wrappers.R")
 source("Scripts/generate_features.R")
 source("Scripts/boost_training_data.R")
 source("Scripts/model_optimisation.R")
 source("Scripts/performance_testing.R")
 source("Scripts/silhouette.R")
 source("Scripts/visualise_features.R")
-source("Scripts/choosing_target_class.R")
 # source("Scripts/analysis.R")
 
 # variables
@@ -69,23 +84,24 @@ boost_methods <- c("Nothing",
                    "Oversample",
                    "Overlap50",
                    "Overlap90",
-                   "RandomNoise" #,
-                   # "Rotation",
-                   # "SMOTE",
-                   # "ADSYN" #,
+                   "RandomNoise",
+                   "Rotation",
+                   "SMOTE",
+                   "ADSYN" #,
                    #"DTW",
                    #"Decomposition"
 )
 
 all_species <- settings$Species
+all_species <- setdiff(all_species, "Vehkaoja_Dog") # exclude for now due to different time
 
 available_axes <- c("X", "Y", "Z")
 metadata_cols <- c("Activity", "ID", "Time", "win_id")
 target_col <- "Activity"
 type <- "multiclass"
 
-cut_conditions <- c(1, 5, 10, 25, 100)
-downsample <- "samples" # IDs
+cut_conditions <- c(1, 5, 10, 25, 50, 100)
+stratification <- "bouts" # "IDs", "bouts", "random"
 
 # File directory ----------------------------------------------------------
 # for each of the defined species check data exists and create an output folder

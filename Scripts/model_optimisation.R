@@ -3,7 +3,16 @@ design_build_RF <- function(data, type, metadata_cols, hyperparameters = NULL){
   #' Function for optimising the hyperparameters of a random forest ranger model
   #' data: labelled data to be used 
   #' type (binary | multiclass): string of what type of scenario it is
+
+  # prep the data
+  other_feature_data <- as.data.table(data)
+  clean_cols <- removeBadFeatures(other_feature_data, var_threshold = 0.3, corr_threshold = 0.9)
+  training_data <- other_feature_data %>%
+    select(c(!!!syms(clean_cols), "Activity")) %>%
+    na.omit() %>%
+    mutate(Activity = as.factor(Activity))
   
+  # choose the hyperparmaters
   if (is.null(hyperparameters)){
     # if the hyperparameters dont exist, regenerate them
       
@@ -42,19 +51,18 @@ design_build_RF <- function(data, type, metadata_cols, hyperparameters = NULL){
     hyperparameters <- c("best_mtry" = best_mtry, "best_number_trees" = best_number_trees, 
                         "best_max_depth" = best_max_depth, "best_performance" = best_performance)
   
-  } else {
-    best_mtry <- hyperparameters$value[hyperparameters$parameter == "best_mtry"]
+  } else if (hyperparameters == "default"){
+    best_mtry <- floor(sqrt(length(clean_cols)))
+    best_number_trees <- 500
+    best_max_depth <- NULL
+    
+  } else { # if a dataframe with values has been input
+    best_mtry <- floor(sqrt(length(clean_cols)))
     best_number_trees <- hyperparameters$value[hyperparameters$parameter == "best_number_trees"]
     best_max_depth <- hyperparameters$value[hyperparameters$parameter == "best_max_depth"]
   }
   
   # Train an optimal model --------------------------------------------------
-  other_feature_data <- as.data.table(data)
-  clean_cols <- removeBadFeatures(other_feature_data, var_threshold = 0.3, corr_threshold = 0.9)
-  training_data <- other_feature_data %>%
-    select(c(!!!syms(clean_cols), "Activity")) %>%
-    na.omit() %>%
-    mutate(Activity = as.factor(Activity))
   
   if (best_mtry > length(clean_cols)-1){
     message("mtry too big, making max clean cols")
@@ -209,7 +217,7 @@ RFModelOptimisation <- function(feature_data, type, metadata_cols, number_trees,
                                     levels = colnames(probabilities))
         
         predictions_df <- cbind(testing_metadata, predictions = predicted_classes)
-        predictions_df <- predictions_df %>% rename(true_class = all_of(target_col))
+        predictions_df <- predictions_df %>% rename(true_class = all_of("Activity"))
         
       }, error = function(e) {
         message("Error in making predictions: ", e$message)

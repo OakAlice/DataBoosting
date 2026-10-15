@@ -1,10 +1,12 @@
+# Helper functions that dont otherwise fit into a different file ----------
+
 make_ID_groups <- function(feature_data, target_col = "Activity", k = 3,
                            priority_classes = NULL, max_tries = 200) {
   
   # if any of the splits dont contain the validation class, my method dies. Ensure it always has
   
   dt <- as.data.frame(feature_data)
-  dt <- dt[dt$ID != "Synth", ]                       # synthetics never go in validation
+  dt <- dt[dt$ID != "Synth", ] # synthetics never go in validation set
   unique_IDs <- unique(dt$ID)
   
   # classes that must appear in every validation fold
@@ -21,8 +23,7 @@ make_ID_groups <- function(feature_data, target_col = "Activity", k = 3,
             ". Some folds will lack them.")
   }
   
-  # 1) deterministic: deal the IDs of each class round-robin across folds,
-  #    rarest class first, so every fold gets some of each
+  # code courtesy of claude
   group <- setNames(rep(NA_integer_, length(unique_IDs)), unique_IDs)
   for (cls in names(sort(lengths(ids_by_class)))) {
     ids <- sample(ids_by_class[[cls]])
@@ -35,7 +36,6 @@ make_ID_groups <- function(feature_data, target_col = "Activity", k = 3,
     }
   }
   
-  # 2) IDs with no must-have class: random fill
   left <- names(group)[is.na(group)]
   if (length(left) > 0) group[left] <- sample(rep(1:k, length.out = length(left)))
   
@@ -49,64 +49,126 @@ cached <- function(path, compute) {
   out
 }
 
-
 reset_everything <- function() {
-  data_files   <- list.files("Data", full.names = TRUE, recursive = TRUE)
-  keep_files   <- list.files("Data", full.names = TRUE, recursive = TRUE,
+  #' this deletes everything except the raw data and the Hz for fresh runs 
+  #' be careful though
+  
+  data_files <- list.files("Data", full.names = TRUE, recursive = TRUE)
+  keep_files <- list.files("Data", full.names = TRUE, recursive = TRUE,
                              pattern = "Formatted_raw_data\\.csv$")
   keep_files <- c(keep_files, "Data/DatasetCharacteristics.csv")
   delete_files <- c(setdiff(data_files, keep_files),
                     list.files("Output", full.names = TRUE, recursive = TRUE))
   
   file.remove(delete_files) %>% invisible()
+  message("cleared and ready for the next run :)")
 }
 
-
-
-
-
-
-
-
-subset_train_data <- function(downsample, other, target, test_IDs, cut){
+subset_target_data <- function(stratification, train, test_IDs, cut, target_class){
+  #' select some subset of the data to be retained
   
-  pool <- target %>% dplyr::filter(!ID %in% test_IDs)
+  target <- train %>% dplyr::filter(Activity == target_class) # this is the data we're messing with
   
-  if (downsample == "samples"){
+  if (stratification == "random"){
+    # this will randomly select individual windows
+    # I considered various rules for keeping all the individuals (commented as legacy code below)
+    # but in the end decided to keep it truly random
     
-    n_total <- ceiling(nrow(pool) * (cut/100))
+    n_total <- ceiling(nrow(target) * (cut/100))
+    # alloc <- target %>%
+    #   dplyr::count(ID, name = "n_orig") %>%
+    #   mutate(exact  = n_orig / sum(n_orig) * n_total,
+    #          n_take = floor(exact),
+    #          n_take = n_take + (rank(-(exact - n_take), ties.method = "first") <= n_total - sum(n_take)),
+    #          n_take = pmin(n_take, n_orig))
+    # target_train <- target %>%
+    #   left_join(dplyr::select(alloc, ID, n_take), by = "ID") %>%
+    #   group_by(ID) %>%
+    #   dplyr::slice(sample.int(dplyr::n(), dplyr::first(n_take))) %>%
+    #   ungroup() %>%
+    #   dplyr::select(-n_take)
     
-    alloc <- pool %>%
-      dplyr::count(ID, name = "n_orig") %>%
-      mutate(exact  = n_orig / sum(n_orig) * n_total,
-             n_take = floor(exact),
-             n_take = n_take + (rank(-(exact - n_take), ties.method = "first") <= n_total - sum(n_take)),
-             n_take = pmin(n_take, n_orig))
+    # n_ind <- length(unique(target$ID))
+    # target_selected <- target %>% group_by(ID) %>% slice_sample(n = ceiling(n_total/n_ind))
     
-    target_train <- pool %>%
-      left_join(dplyr::select(alloc, ID, n_take), by = "ID") %>%
-      group_by(ID) %>%
-      dplyr::slice(sample.int(dplyr::n(), dplyr::first(n_take))) %>%
-      ungroup() %>%
-      dplyr::select(-n_take)
+    target_selected <- target %>% slice_sample(n = n_total)
     
-    train <- bind_rows(other %>% dplyr::filter(!ID %in% test_IDs), target_train)
-    
-  } else {
+  } else if (stratification == "IDs") {
     # this is by ID... removing IDs
     # retain only subsample% of the training individuals that have the target class
     
     target_IDs <- unique(pool$ID)
-    n_keep     <- max(1, ceiling(length(target_IDs) * cut/ 100))
-    keep_IDs   <- sample(target_IDs, n_keep)
+    n_keep <- max(1, ceiling(length(target_IDs) * cut/ 100))
+    keep_IDs <- sample(target_IDs, n_keep)
+    target_selected <- target %>% dplyr::filter(ID %in% keep_IDs)
     
-    target_train <- pool %>% dplyr::filter(ID %in% keep_IDs)
+  } else if (stratification == "bouts"){  
     
-    # other classes from the dropped individuals stay in training, so only the
-    # target class is reduced
-    train <- bind_rows(other %>% dplyr::filter(!ID %in% test_IDs), target_train)
+    # I have hardcoded a rule for what will be considered as an observational bout (10x windows)
+    # this would actually be different between every study/context
+    target <- target %>%
+      arrange(ID, Time) %>%
+      group_by(ID) %>%
+      mutate(diff = as.numeric(Time - lag(Time), units = "secs"))
+    
+    tab <- table(target$diff)
+    mode_diff <- as.numeric(names(tab)[which.max(tab)])
+    
+    target <- target %>% mutate(bout_id = cumsum(is.na(diff) | diff > (mode_diff * 10))) %>% ungroup()
+    
+    # and now seelct the proportion of bouts 
+    keep_bouts <- sample(unique(target$bout_id), ceiling(length(unique(target$bout_id)) * cut/100))
+    target_selected <- target %>% dplyr::filter(bout_id %in% keep_bouts) %>%
+      select(-any_of(c("diff", "bout_id")))
+    
+  } else {
+    print("stratification method unknwon: select from IDs, random, or bouts.")
   }
   
-  return(train)
+  all <- bind_rows(train %>% dplyr::filter(Activity != target_class), target_selected)
+  
+  return(all)
+}
+
+get_species_config <- function(species, settings) {
+  s <- settings[settings$Species == species, ]
+  list(
+    species = species,
+    target  = s$minorityTarget,
+    Hz      = s$Hz,
+    window  = if (s$Hz > 1) 2 else 5,
+    data_path   = file.path("Data", species),
+    output_path = file.path("Output", species)
+  )
+}
+
+prepare_species_data <- function(cfg) {
+  
+  raw_data <- fread(file.path(cfg$data_path, "Formatted_raw_data.csv"))
+  raw_data[, row_id := .I]
+  
+  feature_path <- file.path(cfg$data_path, "Nothing_Feature_data.csv")
+  key_path     <- file.path(cfg$data_path, "Nothing_Window_key.csv")
+  
+  if (file.exists(feature_path) && file.exists(key_path)) {
+    message("Loading the features and window key made previously")
+    feature_data <- fread(feature_path)
+    key          <- fread(key_path)
+  } else {
+    message("No precomputed features/key, generating")
+    res <- generate_features_master(raw_data,
+                                    sample_rate     = cfg$Hz,
+                                    overlap_setting = 0,
+                                    window_setting  = cfg$window)
+    feature_data <- res$features
+    key          <- res$key
+    fwrite(feature_data, feature_path)
+    fwrite(key, key_path)
+  }
+  
+  # overlap = 0, so each raw row is in at most one window and the key can sit on raw
+  raw_data[key, on = "row_id", win_id := i.win_id]
+  
+  list(raw = raw_data, features = feature_data, key = key)
 }
 

@@ -1,8 +1,5 @@
 # Function for testing performance ----------------------------------------
 
-# Function to compute confusion matrix metrics (+ AUC-ROC / AUC-PR if probabilities supplied)
-# probabilities: multiclass -> matrix/data.frame of class probabilities, colnames = class labels
-#                binary     -> numeric vector of P("target"), or a matrix with a "target" column
 compute_metrics <- function(predicted_classes, ground_truth_labels, type = c("multiclass", "binary"),
                             probabilities = NULL) {
   type <- match.arg(type)
@@ -106,7 +103,7 @@ compute_metrics <- function(predicted_classes, ground_truth_labels, type = c("mu
               conf_matrix_padded = conf_matrix_padded))
 }
 
-test_model <- function(type, model, test_data, metadata_cols, target_col){
+test_model <- function(type, model, test_data, metadata_cols){
   #' Function to test the supervised machine learning random forest ranger model
   #' type ("binary" | "multiclass"): whether the model being tested is binary or multiclass
   #' model: the ranger random forest object
@@ -133,7 +130,7 @@ test_model <- function(type, model, test_data, metadata_cols, target_col){
     as.matrix()
   if (anyNA(numeric_testing_data)) message("Validation data contains missing values!")
   testing_metadata <- complete_cases %>% select(all_of(metadata_cols))
-  ground_truth_labels <- factor(testing_metadata[[target_col]])
+  ground_truth_labels <- factor(testing_metadata[["Activity"]])
 
   # Make predictions
   output <- predict(model, data = numeric_testing_data)
@@ -142,7 +139,7 @@ test_model <- function(type, model, test_data, metadata_cols, target_col){
                               levels = colnames(probabilities))
   
   predictions_df <- cbind(testing_metadata, predictions = predicted_classes)
-  predictions_df <- predictions_df %>% rename(true_class = all_of(target_col))
+  predictions_df <- predictions_df %>% rename(true_class = all_of("Activity"))
   
   metrics <- compute_metrics(predicted_classes = as.factor(predictions_df$predictions), 
                              ground_truth_labels = as.factor(predictions_df$true_class),
