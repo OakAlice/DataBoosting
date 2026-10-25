@@ -10,7 +10,7 @@ source("Scripts/config.R") # file with all the config infomation for the analysi
 # Determine the target classes --------------------------------------------
 target_classes <- determine_targets(all_species, plot = FALSE) # if plot true makes a bar chart
 
-#all_species <- c("Dunford_Cat")
+# species <- c("Dickinson_Goat")
 for (species in all_species){
   
   message(species)
@@ -24,18 +24,22 @@ for (species in all_species){
   
   # Volume (majority) trials ------------------------------------------------
   majority_class <- target_classes %>% dplyr::filter(type == "Majority", Species == species) %>% pull(Activity)
-  run_majority_trials(species, 
-                      Hz = settings$Hz[settings$Species == species], 
-                      raw_data = dat$raw, 
-                      features = dat$features, 
-                      target_class = majority_class, 
-                      model_type = "RF",
-                      hyperparameters, boost_methods, cut_conditions, stratification, 
-                      k = 3) # this is the number of folds -- must be 2 or more
-  
+  run_majority_trials(species,
+                      Hz = settings$Hz[settings$Species == species],
+                      raw_data = dat$raw,
+                      features = dat$features,
+                      target_class = majority_class,
+                      hyperparameters, metadata_cols, boost_methods, cut_conditions, stratification,
+                      k = 3, n_reps = 5) # this is the number of folds -- must be 2 or more
+
   # Boosting trials ---------------------------------------------------------
-  # minority_classes <- target_classes %>% dplyr::filter(type == "Minority", Species == species) %>% pull(Activity)
-  # run_binary_experiment(species, settings, dat, minority_classes, hyperparameters, boost_methods, k = 2) # has to be 2 or more
+  # minority_class <- target_classes %>% dplyr::filter(type == "Minority", Species == species) %>% pull(Activity)
+  # run_minority_trials(species, 
+  #                     Hz = settings$Hz[settings$Species == species], 
+  #                     raw_data = dat$raw, 
+  #                     features = dat$features,
+  #                     target_class = minority_class, 
+  #                     hyperparameters, boost_methods, k = 3) # has to be 2 or more
 
   # Generate the data for visualisation -------------------------------------
   # generate_augmented_data(all_species, boost_methods)  

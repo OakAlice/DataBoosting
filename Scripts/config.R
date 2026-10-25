@@ -86,8 +86,8 @@ boost_methods <- c("Nothing",
                    "Overlap90",
                    "RandomNoise",
                    "Rotation",
-                   "SMOTE",
-                   "ADSYN" #,
+                   "SMOTE"
+                   # "ADSYN" #,
                    #"DTW",
                    #"Decomposition"
 )
@@ -106,7 +106,7 @@ stratification <- "bouts" # "IDs", "bouts", "random"
 # File directory ----------------------------------------------------------
 # for each of the defined species check data exists and create an output folder
 for (species in all_species) {
-  dirs <- c(file.path("Output", species, c("Binary", "Volume", "Figures")),
+  dirs <- c(file.path("Output", species, c("Minority", "Majority", "Figures")),
             file.path("Data", species, "Boost"))
   for (d in dirs) dir.create(d, recursive = TRUE, showWarnings = FALSE)
 }

@@ -160,17 +160,22 @@ rotation_minority <- function(raw_data, feature_data, target_class,
     
     # non-overlapping raw windows of this class, within contiguous runs per ID
     cls_windows <- raw_data %>%
+      as_tibble() %>%
       mutate(.row = row_number()) %>%
       dplyr::filter(.data[["Activity"]] == cls) %>%
       group_by(ID, run = cumsum(c(1, diff(.row)) != 1)) %>%
       group_map(~ {
-        m   <- as.matrix(.x[, axis_cols])
+        m   <- as.matrix(.x[, axis_cols, drop = FALSE])
         n_w <- nrow(m) %/% win_len
         lapply(seq_len(n_w), function(i) m[((i - 1) * win_len + 1):(i * win_len), , drop = FALSE])
       }) %>%
       unlist(recursive = FALSE)
     
-    if (length(cls_windows) == 0) return(NULL)
+    if (length(cls_windows) == 0) {
+      warning("No windows of length ", win_len, " for class '", cls, "'")
+      cls_windows <- list()
+      return(NULL)
+    }
     
     # code courtesy of claude
     lapply(seq_len(n_needed), function(i) {
@@ -201,36 +206,47 @@ rotation_minority <- function(raw_data, feature_data, target_class,
 smote_minority <- function(training_data, smote_method, metadata_cols,
                            target_class, k = 5, target_n = NULL) {
   
-  # cant handle any NAs so have to clean the data first
   cleaned <- clean_raw_data(training_data, metadata_cols)
   y <- as.character(cleaned$y)
   X <- as.data.frame(cleaned$X)
   
   counts <- table(y)
-  if (is.null(target_n)) target_n <- ceiling(max(counts) / 2)  # half the majority
+  if (is.null(target_n)) target_n <- ceiling(max(counts) / 2)
   
   out <- lapply(target_class, function(cls) {
-    n_cls <- counts[[cls]]
+    n_cls    <- counts[[cls]]
     have     <- sum(training_data[["Activity"]] == cls)
     n_needed <- target_n - have
     
-    # class already at or above the mean: add extra_prop of its current count instead
-    if (n_needed <= 0){ 
-      n_needed <- ceiling(0.2 * have) # this is hardcoded
+    if (n_needed <= 0) {
+      n_needed <- ceiling(0.2 * have)
       message("I'm arbitrarily adding 20% here because the mean condition is already met")
     }
     
     message("class ", cls, ": have = ", have, ", target_n = ", target_n, ", adding = ", n_needed)
-    if (n_needed <= 0) return(NULL)   # only when the class has 0 windows
+    if (n_needed <= 0) return(NULL)
     
-    k_use  <- min(k, n_cls - 1)
-    y_bin  <- ifelse(y == cls, cls, "other")   # one-vs-rest so only this class is oversampled
+    k_use <- min(k, n_cls - 1)
+    y_bin <- ifelse(y == cls, cls, "other")
+    
+    # smotefamily always oversamples the smaller class, so make "other" the larger one.
+    # SMOTE only needs other > target; ADAS generates ~(n_other - n_target), so size it to n_needed.
+    n_oth    <- sum(y_bin == "other")
+    want_oth <- max(n_oth, n_cls + if (smote_method == "ADSYN") n_needed else 1)
+    X_aug <- X
+    y_aug <- y_bin
+    if (want_oth > n_oth) {
+      oth_idx <- which(y_bin == "other")
+      extra   <- sample(oth_idx, want_oth - n_oth, replace = TRUE)   # decoy rows, discarded later
+      X_aug   <- rbind(X, X[extra, , drop = FALSE])
+      y_aug   <- c(y_bin, y_bin[extra])
+    }
     
     syn <- tryCatch(
       if (smote_method == "SMOTE") {
-        smotefamily::SMOTE(X, y_bin, K = k_use, dup_size = ceiling(n_needed / n_cls))
+        smotefamily::SMOTE(X_aug, y_aug, K = k_use, dup_size = ceiling(n_needed / n_cls))
       } else if (smote_method == "ADSYN") {
-        smotefamily::ADAS(X, y_bin, K = k_use)
+        smotefamily::ADAS(X_aug, y_aug, K = k_use)
       },
       error = function(e) { message(smote_method, " failed for ", cls, ": ", e$message); NULL }
     )
@@ -238,7 +254,7 @@ smote_minority <- function(training_data, smote_method, metadata_cols,
     
     s <- syn$syn_data[syn$syn_data$class == cls, , drop = FALSE]
     if (nrow(s) == 0) return(NULL)
-    if (nrow(s) > n_needed) s <- s[sample(nrow(s), n_needed), , drop = FALSE]  # trim to target
+    if (nrow(s) > n_needed) s <- s[sample(nrow(s), n_needed), , drop = FALSE]
     s
   })
   
@@ -437,7 +453,7 @@ boost_training_data <- function(raw_data, feature_data = NULL, metadata_cols, ta
     synth_features <- rotation_minority(raw_data, feature_data, target_class, Hz, 
                                         window_s = ifelse(Hz > 1, 2, 5),
                                         max_angle = 5) # how much it can rotate by... have made this conservative
-    
+    if (is.null(synth_features)) return (NULL)
     synth_features <- synth_features %>% mutate(Time = feature_data$Time[1])
     
   } else if (method == "SMOTE"){
@@ -469,6 +485,8 @@ boost_training_data <- function(raw_data, feature_data = NULL, metadata_cols, ta
     print("Please choose from defined list of boosting options (in the config file).")
     
   }
+  
+  if (is.null(synth_features)) return (NULL)
   
   boosted_data <- unique(rbindlist(list(synth_features, feature_data),
                                    use.names = TRUE, fill = TRUE)) # this will also remove any possible duplicates

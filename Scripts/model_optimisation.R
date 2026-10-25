@@ -108,22 +108,33 @@ design_build_RF <- function(data, type, metadata_cols, hyperparameters = NULL){
 # remove redundant and NA columns
 removeBadFeatures <- function(feature_data, var_threshold, corr_threshold) {
   
-  # Step 1: Calculate variance for numeric columns
-  numeric_columns <- feature_data[, .SD, .SDcols = !names(feature_data) %in% c("Activity", "ID", "Time")]
-  variances <- numeric_columns[, lapply(.SD, var, na.rm = TRUE)]
+  # sometimes empty data is coming in and erroring here...
+  stopifnot(is.data.frame(feature_data), ncol(feature_data) > 0, nrow(feature_data) > 0)
+  
+  # pick numeric columns by name, excluding metadata
+  num_cols <- names(feature_data)[vapply(feature_data, is.numeric, logical(1))]
+  num_cols <- setdiff(num_cols, c("Activity", "ID", "Time"))
+  
+  if (length(num_cols) == 0) stop("No numeric feature columns found")
+  
+  numeric_columns <- feature_data[, ..num_cols]
+  
+  variances <- sapply(numeric_columns, var, na.rm = TRUE)
   selected_columns <- names(variances)[!is.na(variances) & variances > var_threshold]
   
-  if (!length(selected_columns) > 2){
-    selected_columns <- names(variances)[!is.na(variances)] # include all of them then
+  if (length(selected_columns) <= 2) {
+    selected_columns <- names(variances)[!is.na(variances)]
   }
   
-  # Step 2: Remove highly correlated features
-  numeric_columns <- numeric_columns[, ..selected_columns]
-  corr_matrix <- cor(numeric_columns, use = "pairwise.complete.obs")
-  high_corr <- findCorrelation(corr_matrix, cutoff = corr_threshold)
-  remaining_features <- setdiff(names(numeric_columns), names(numeric_columns)[high_corr])
+  if (length(selected_columns) < 2) {
+    warning("Fewer than 2 usable features; skipping correlation filter")
+    return(selected_columns)
+  }
   
-  return(remaining_features)
+  corr_matrix <- cor(numeric_columns[, ..selected_columns], use = "pairwise.complete.obs")
+  high_corr <- findCorrelation(corr_matrix, cutoff = corr_threshold, names = TRUE)
+  
+  setdiff(selected_columns, high_corr)
 }
 
 # main call that splits data, generates function, and validates
