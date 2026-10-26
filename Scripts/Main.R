@@ -10,7 +10,7 @@ source("Scripts/config.R") # file with all the config infomation for the analysi
 # Determine the target classes --------------------------------------------
 target_classes <- determine_targets(all_species, plot = FALSE) # if plot true makes a bar chart
 
-# species <- c("Dickinson_Goat")
+# all_species <- setdiff(all_species, "Dunford_Cat")
 for (species in all_species){
   
   message(species)
@@ -30,15 +30,16 @@ for (species in all_species){
                       features = dat$features,
                       target_class = majority_class,
                       hyperparameters, metadata_cols, boost_methods, cut_conditions, stratification,
-                      k = 3, n_reps = 5) # this is the number of folds -- must be 2 or more
+                      k = 3, # this is the number of test data folds -- must be 2 or more
+                      n_reps = 2) # this is how many reps within each fold (~5-10 replicates ideal)
 
   # Boosting trials ---------------------------------------------------------
   # minority_class <- target_classes %>% dplyr::filter(type == "Minority", Species == species) %>% pull(Activity)
-  # run_minority_trials(species, 
-  #                     Hz = settings$Hz[settings$Species == species], 
-  #                     raw_data = dat$raw, 
+  # run_minority_trials(species,
+  #                     Hz = settings$Hz[settings$Species == species],
+  #                     raw_data = dat$raw,
   #                     features = dat$features,
-  #                     target_class = minority_class, 
+  #                     target_class = minority_class,
   #                     hyperparameters, boost_methods, k = 3) # has to be 2 or more
 
   # Generate the data for visualisation -------------------------------------

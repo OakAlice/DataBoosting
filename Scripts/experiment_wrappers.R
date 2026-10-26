@@ -114,6 +114,8 @@ run_majority_trials <- function(species, Hz, raw_data, features, target_class, h
       # pulling out the training vs test data
       train <- features %>% dplyr::filter(!ID %in% test_IDs)
       
+      target_count <- nrow(train[train$Activity == target_class]) # this is how mnay to augment up to
+      
       # subsampling it multiple times
       for (r in seq_len(n_reps)){
         message(r)
@@ -122,11 +124,17 @@ run_majority_trials <- function(species, Hz, raw_data, features, target_class, h
         # and then match it to the right raw data... (this is messy but I need for some methods)
         selected_raw <- raw_data[win_id %in% unique(selected_features$win_id)]
         
-        # and now boost the sampled training data...
+        if (nrow(selected_features[selected_features$Activity == target_class])<10 & grid$method[j] == "SMOTE"){
+          message("Too few samples for smote")
+          all_metrics[[j]] <- NULL # have to skip it
+          next
+        }
+        
+        # and now boost the sampled training data if it can be done
         boosted <- boost_training_data(
           raw_data = selected_raw,
           feature_data = selected_features,
-          metadata_cols, target_class,
+          metadata_cols, target_class, target_count,
           method = grid$method[j],
           Hz
         )
@@ -191,15 +199,17 @@ run_minority_trials <- function(species, Hz, raw_data, features, target_class, h
       test_IDs <- ID_groups$ID[ID_groups$group == f]
       test_features <- features %>% dplyr::filter(ID %in% test_IDs)
       
-      # pulling out the training data and subsampling it to the cut_condition
       train <- features %>% dplyr::filter(!ID %in% test_IDs)
       selected_raw <- raw_data %>% dplyr::filter(!ID %in% test_IDs)
+      
+      # set the target count to be the same as the majority class
+      target_count <- max(table(train$Activity))
       
       # and now boost the sampled training data...
       boosted <- boost_training_data(
         raw_data = selected_raw,
         feature_data = train,
-        metadata_cols, target_class,
+        metadata_cols, target_class, target_count,
         method = grid$method[j],
         Hz
       )

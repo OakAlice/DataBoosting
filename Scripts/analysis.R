@@ -13,6 +13,10 @@ majority_files <- metrics[grepl("/Majority/", metrics)]
 majority <- rbindlist(lapply(majority_files, fread), fill = TRUE)
 result_df <- merge(majority, target_classes, by.x = c("Species", "class"), by.y = c("Species", "Activity"), all.x = TRUE)
 
+
+result_df <- result_df[result_df$Species == "Dickinson_Goat"]
+
+
 summary <- result_df %>%
   group_by(Species, method, class, prop.x, type) %>%
   summarise(
@@ -56,11 +60,11 @@ summary2 <- result_df2 %>% group_by(Species, method, prop.x) %>%
 
 # Plots -------------------------------------------------------------------
 ggplot(summary,
-       aes(x = prop.x, y = mean_F1, colour = method, group = method)) +
+       aes(x = factor(prop.x), y = mean_F1, colour = method, group = method)) +
   geom_path(linewidth = 1, alpha = 0.5) +
   geom_point(data = ~ filter(.x, method != "Nothing"), size = 5, alpha = 0.7) +
   geom_errorbar(aes(ymin = mean_F1 - ci_F1, ymax = mean_F1 + ci_F1),
-                linewidth = 1, width = 0.5) +
+                linewidth = 1, width = 0.1) +
   geom_point(data = ~ filter(.x, method == "Nothing"),
              shape = 8, colour = "black", size = 3, stroke = 1) +
   labs(x = "Percentage of retained bouts (%)", y = "F1") +
@@ -70,11 +74,11 @@ ggplot(summary,
   facet_wrap(~Species)
 
 ggplot(summary2,
-       aes(x = prop.x, y = mean, colour = method, group = method)) +
+       aes(x = as.factor(prop.x), y = mean, colour = method, group = method)) +
   geom_path(linewidth = 1, alpha = 0.5) +
   geom_point(data = ~ filter(.x, method != "Nothing"), size = 5, alpha = 0.7) +
   geom_errorbar(aes(ymin = mean - ci, ymax = mean + ci),
-                linewidth = 1, width = 0.5) +
+                linewidth = 1, width = 0.1) +
   geom_point(data = ~ filter(.x, method == "Nothing"),
              shape = 8, colour = "black", size = 3, stroke = 1) +
   labs(x = "Percentage of retained bouts (%)", y = "F1") +

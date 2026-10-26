@@ -114,12 +114,40 @@ subset_target_data <- function(stratification, train, test_IDs, cut, target_clas
     tab <- table(target$diff)
     mode_diff <- as.numeric(names(tab)[which.max(tab)])
     
-    target <- target %>% mutate(bout_id = cumsum(is.na(diff) | diff > (mode_diff * 10))) %>% ungroup()
+    # bout_id restarts at 1 for every ID (cumsum is grouped), so make it unique across IDs
+    target <- target %>%
+      mutate(bout_id = cumsum(is.na(diff) | diff > (mode_diff * 10))) %>%
+      ungroup() %>%
+      mutate(bout_id = paste(ID, bout_id, sep = "_"))
     
-    # and now seelct the proportion of bouts 
-    keep_bouts <- sample(unique(target$bout_id), ceiling(length(unique(target$bout_id)) * cut/100))
-    target_selected <- target %>% dplyr::filter(bout_id %in% keep_bouts) %>%
+    # and now select the proportion of bouts
+    all_bouts   <- unique(target$bout_id)
+    exact_bouts <- length(all_bouts) * cut / 100     # e.g. 0.1% of 10 bouts = 0.01 bouts
+    n_full      <- floor(exact_bouts)                # whole bouts to keep
+    frac        <- exact_bouts - n_full              # leftover fraction of one more bout
+    
+    ordered_bouts <- sample(all_bouts)               # random order
+    keep_bouts    <- ordered_bouts[seq_len(n_full)]
+    
+    # the leftover fraction comes from a contiguous slice of one extra bout
+    # (so 0.1% when 1% = 1 bout gives 10% of that bout, 0.5% gives 50%, and so on)
+    partial <- NULL
+    if (frac > 0 && n_full < length(all_bouts)) {
+      pb <- target %>% dplyr::filter(bout_id == ordered_bouts[n_full + 1])
+      n_keep <- max(1, round(nrow(pb) * frac))
+      start  <- sample(nrow(pb) - n_keep + 1, 1)     # random start, contiguous windows
+      partial <- pb[start:(start + n_keep - 1), ]
+    }
+    
+    target_selected <- bind_rows(
+      target %>% dplyr::filter(bout_id %in% keep_bouts),
+      partial
+    ) %>%
       select(-any_of(c("diff", "bout_id")))
+    
+    message(paste("total bouts:", length(all_bouts), "| requested:", round(exact_bouts, 3),
+                  "| whole bouts:", n_full, "| partial bout fraction:", round(frac, 3),
+                  "| windows:", nrow(target_selected)))
     
   } else {
     print("stratification method unknwon: select from IDs, random, or bouts.")
