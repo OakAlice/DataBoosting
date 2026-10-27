@@ -119,11 +119,56 @@ ggplot(group_preds,
              linetype = "dashed",
              colour = "red") +
   labs(x = "Augmentation method",
-       y = "Mean change in F1 (relative to control)") +
+       y = "Mean change in F1") +
   my_theme() + 
   scale_colour_manual(values = fave_colours) +
   theme(legend.position = "none", axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45)) + 
   facet_grid(~prop.x)
+
+
+
+
+
+m2 <- glmmTMB(change ~ method + (1|Species:fold), data = df1)
+m2.2 <- update(m2, ~. -1) #*** the `-1` removes the intercept
+summary(m2.2)
+
+#DHARMa::simulateResiduals(m1.2, plot = TRUE) 
+
+group_preds <- marginaleffects::predictions(m2.2,
+                                            re.form = NA) %>%   # Includes fixed + random effects
+  as_tibble()
+
+ggplot(group_preds,
+       aes(x = method,
+           y = estimate,
+           colour = method)) +
+  geom_errorbar(aes(ymin = conf.low,
+                    ymax = conf.high),
+                linewidth = 1,
+                width = 0.5) +
+  geom_point(size = 5) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             colour = "red") +
+  labs(x = "Augmentation method",
+       y = "Mean change in F1") +
+  my_theme() + 
+  scale_colour_manual(values = fave_colours) +
+  theme(legend.position = "none")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

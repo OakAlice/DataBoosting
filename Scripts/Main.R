@@ -31,18 +31,8 @@ for (species in all_species){
                       features = dat$features,
                       target_class = majority_class,
                       hyperparameters, metadata_cols, boost_methods, cut_conditions, stratification,
-                      k = 3, # this is the number of test data folds -- must be 2 or more
+                      k = 3, # this is the number of test data folds -- must be 2 or more fr code to work
                       n_reps = 3) # this is how many reps within each fold (~5-10 replicates ideal)
-                      # when the stratification is windows, there is no stochasticity, so just rep once
-
-  # Boosting trials ---------------------------------------------------------
-  # minority_class <- target_classes %>% dplyr::filter(type == "Minority", Species == species) %>% pull(Activity)
-  # run_minority_trials(species,
-  #                     Hz = settings$Hz[settings$Species == species],
-  #                     raw_data = dat$raw,
-  #                     features = dat$features,
-  #                     target_class = minority_class,
-  #                     hyperparameters, boost_methods, k = 3) # has to be 2 or more
 
   # Generate the data for visualisation -------------------------------------
   # generate_augmented_data(all_species, boost_methods)  
@@ -53,5 +43,5 @@ for (species in all_species){
 }
 
 
-# go to the analysis.R file to visualise etc.
+# go to the analysis.R file to visualise and run stats etc.
 
