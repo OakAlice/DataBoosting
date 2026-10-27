@@ -1,4 +1,5 @@
 # All the configirations and settings for this analysis -------------------
+# learnt to do this from pranav's workflows. Way better than what I had before lol
 
 pacman::p_load(
   tidyverse, 
@@ -61,9 +62,7 @@ methods_colours <- c(
   "DTW" = "plum"
   )
 
-
-
-# Functions
+# Functions -----------------------------------------------------------------
 source("Scripts/helpers.R")
 source("Scripts/choosing_target_class.R")
 source("Scripts/experiment_wrappers.R")
@@ -75,7 +74,7 @@ source("Scripts/silhouette.R")
 source("Scripts/visualise_features.R")
 # source("Scripts/analysis.R")
 
-# variables
+# variables ----------------------------------------------------------------
 set.seed(1000)
 
 settings <- fread("Data/DatasetCharacteristics.csv")
@@ -103,11 +102,3 @@ type <- "multiclass"
 # cut_conditions <- c(0.1, 0.5, 1, 5, 10, 25, 50, 75)
 cut_conditions <- c(1, 5, 10, 50, 100, 500, 1000) 
 stratification <- "random" # "IDs", "bouts", "random", "windows"
-
-# File directory ----------------------------------------------------------
-# for each of the defined species check data exists and create an output folder
-for (species in all_species) {
-  dirs <- c(file.path("Output", species, c("Minority", "Majority", "Figures")),
-            file.path("Data", species, "Boost"))
-  for (d in dirs) dir.create(d, recursive = TRUE, showWarnings = FALSE)
-}

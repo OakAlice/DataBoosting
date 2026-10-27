@@ -39,10 +39,10 @@ determine_targets <- function(all_species, settings, plot = FALSE){
       rbind(minority, majority) %>%
         mutate(Species = species,
                Hz = sp_hz,
-               n_classes = nrow(class_counts),            # all classes
+               n_classes = nrow(class_counts),
                n_individuals = n_distinct(dat$ID),
                total_min = round(total / sp_hz / 60, 1),
-               imbalance = round(max(eligible$n) / min(eligible$n), 2))  # majority:minority, eligible classes only
+               imbalance = round(max(eligible$n) / min(eligible$n), 2))
     })
     
     targets <- rbindlist(targets)

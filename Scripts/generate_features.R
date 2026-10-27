@@ -23,7 +23,8 @@ generate_features_master <- function(data, sample_rate, overlap_setting, window_
 }
 
 # Function to process data for each ID
-# had claude rewrite my old code for speed
+# had claude rewrite my old code for speed and DAMN. Although it got rid of a LOT of the features
+# I had previously been making - it got so much more blindingly faster, I couldnt believe it.
 process_features_per_chunk <- function(raw_data, features_type = c("statistical", "timeseries"),
                                        window_length, sample_rate, overlap_percent, available_axes) {
   raw_data <- as.data.table(raw_data)

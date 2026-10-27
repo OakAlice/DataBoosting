@@ -5,23 +5,21 @@
 setwd("C:/Users/PC/OneDrive - University of the Sunshine Coast/04.DataBoosting")
 source("Scripts/config.R") # file with all the config infomation for the analysis
 
-# reset_everything() # deletes everything except the raw data
+# reset_everything() # deletes everything except the raw data to clean dir for a fresh run
 
 # Determine the target classes --------------------------------------------
 target_classes <- determine_targets(all_species, settings, plot = FALSE) # if plot true makes a bar chart
 
-# all_species <- "Dickinson_Goat"
+# all_species <- "Galea_Cat"
 # boost_methods <- "Overlap50"
 for (species in all_species){
-  
-  message(species)
   
   # Generate the base features ----------------------------------------------
   dat <- make_base_features(species, settings)
 
   # Fit a RF to all the data once -------------------------------------------
   # hyperparameters <- find_optimal_hyperparameters(species, settings, dat)
-  hyperparameters <- "default"
+  hyperparameters <- "default" # fast option... note that optimisation no longer works with the code changes Ive made anyway
   
   # Volume (majority) trials ------------------------------------------------
   majority_class <- target_classes %>% dplyr::filter(type == "Majority", Species == species) %>% pull(Activity)

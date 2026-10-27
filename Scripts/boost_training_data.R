@@ -1,7 +1,8 @@
 # Function for boosting training data -------------------------------------
 # NOTE: currently SMOTE and ADSYN only works if there is a single class being boosted
-# currently have them all going to the mean prevalance and if it exceeds that, adding a random 20%
+# currently have them all going to the previous prevalance except overlap which will do its own thing
 # this needs to be mroe clearly thought out.
+# Probably filled with bugs and errors
 
 clean_raw_data <- function(training_data, metadata_cols) {
   

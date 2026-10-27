@@ -51,7 +51,7 @@ cached <- function(path, compute) {
 
 reset_everything <- function() {
   #' this deletes everything except the raw data and the Hz for fresh runs 
-  #' be careful though
+  #' be careful!!!!!!!!!
   
   data_files <- list.files("Data", full.names = TRUE, recursive = TRUE)
   keep_files <- list.files("Data", full.names = TRUE, recursive = TRUE,
@@ -137,6 +137,7 @@ subset_target_data <- function(stratification, train, test_IDs, cut, target_clas
   
     if (cut > length(unique(target$ID))){
       # this round-robis it so they get roughly equal amounts from each individual
+      # but I dn't know if this is actally a good idea
       target_selected <- target %>%
         mutate(.row = row_number()) %>%
         group_by(ID) %>%
@@ -144,7 +145,7 @@ subset_target_data <- function(stratification, train, test_IDs, cut, target_clas
         ungroup() %>%
         arrange(.rank, ID) %>%
         slice_head(n = cut) %>%
-        arrange(.row) %>%          # restore original order
+        arrange(.row) %>% 
         select(-.row, -.rank)
       
     } else {
@@ -179,25 +180,24 @@ prepare_species_data <- function(cfg) {
   raw_data[, row_id := .I]
   
   feature_path <- file.path(cfg$data_path, "Nothing_Feature_data.csv")
-  key_path     <- file.path(cfg$data_path, "Nothing_Window_key.csv")
+  key_path <- file.path(cfg$data_path, "Nothing_Window_key.csv")
   
   if (file.exists(feature_path) && file.exists(key_path)) {
     message("Loading the features and window key made previously")
     feature_data <- fread(feature_path)
-    key          <- fread(key_path)
+    key <- fread(key_path)
   } else {
     message("No precomputed features/key, generating")
     res <- generate_features_master(raw_data,
-                                    sample_rate     = cfg$Hz,
+                                    sample_rate = cfg$Hz,
                                     overlap_setting = 0,
-                                    window_setting  = cfg$window)
+                                    window_setting = cfg$window)
     feature_data <- res$features
-    key          <- res$key
+    key <- res$key
     fwrite(feature_data, feature_path)
     fwrite(key, key_path)
   }
   
-  # overlap = 0, so each raw row is in at most one window and the key can sit on raw
   raw_data[key, on = "row_id", win_id := i.win_id]
   
   list(raw = raw_data, features = feature_data, key = key)

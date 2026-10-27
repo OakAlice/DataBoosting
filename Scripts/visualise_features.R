@@ -2,6 +2,9 @@
 # To understand why my methods are/aren't working, I need to visualise them in feature space.
 
 
+# havent used this ina  while
+
+
 generate_augmented_data <- function(all_species, boost_methods){
   
   grid <- expand.grid(method = setdiff(boost_methods, "Nothing"), species = all_species, stringsAsFactors = FALSE)
