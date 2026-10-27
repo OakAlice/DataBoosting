@@ -90,12 +90,12 @@ run_majority_trials <- function(species, Hz, raw_data, features, target_class, h
   # set up for the experiment 
   ID_groups <- make_ID_groups(features, target_col = target_col, k = k, priority_classes = target_class)
   grid <- expand.grid(subsample = cut_conditions, method = boost_methods, stringsAsFactors = FALSE)
-  out_dir <- file.path("Output", species, "Majority")
+  out_dir <- file.path("Output", species, paste0("Majority_", stratification))
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)  # otherwise the first fwrite fails
   
   all_metrics <- vector("list", nrow(grid))
   for (j in seq_len(nrow(grid))) {
-    message(species, " | ", grid$subsample[j], "% | ", grid$method[j])
+    message(species, " | ", grid$subsample[j], " | ", grid$method[j])
     
     path <- file.path(out_dir, paste0(grid$subsample[j], "_", grid$method[j], ".csv"))
     if (file.exists(path)){
@@ -111,14 +111,15 @@ run_majority_trials <- function(species, Hz, raw_data, features, target_class, h
       test_IDs <- ID_groups$ID[ID_groups$group == f]
       test_features <- features %>% dplyr::filter(ID %in% test_IDs)
       
-      # pulling out the training vs test data
+      # pulling out the training data
       train <- features %>% dplyr::filter(!ID %in% test_IDs)
-      
+    
+      # what I will be augmenting up to (recopvery of full daatset)
       target_count <- nrow(train[train$Activity == target_class]) # this is how mnay to augment up to
       
       # subsampling it multiple times
       for (r in seq_len(n_reps)){
-        message(r)
+        message("rep: ", r)
         idx <- idx + 1L
         selected_features <- subset_target_data(stratification, train, test_IDs, cut = grid$subsample[j], target_class)
         # and then match it to the right raw data... (this is messy but I need for some methods)
@@ -140,6 +141,9 @@ run_majority_trials <- function(species, Hz, raw_data, features, target_class, h
         )
         
         output <- design_build_RF(data = boosted$boosted_data, type = "multiclass", metadata_cols, hyperparameters)
+        
+        if (is.null(output)) next # just skip this whole thing if it didn;t work (probably because no good columsn)
+        
         metrics <- test_model(type = "multiclass", 
                               output$RF_model,
                               test_data = test_features,

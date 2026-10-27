@@ -74,24 +74,8 @@ subset_target_data <- function(stratification, train, test_IDs, cut, target_clas
     # I considered various rules for keeping all the individuals (commented as legacy code below)
     # but in the end decided to keep it truly random
     
-    n_total <- ceiling(nrow(target) * (cut/100))
-    # alloc <- target %>%
-    #   dplyr::count(ID, name = "n_orig") %>%
-    #   mutate(exact  = n_orig / sum(n_orig) * n_total,
-    #          n_take = floor(exact),
-    #          n_take = n_take + (rank(-(exact - n_take), ties.method = "first") <= n_total - sum(n_take)),
-    #          n_take = pmin(n_take, n_orig))
-    # target_train <- target %>%
-    #   left_join(dplyr::select(alloc, ID, n_take), by = "ID") %>%
-    #   group_by(ID) %>%
-    #   dplyr::slice(sample.int(dplyr::n(), dplyr::first(n_take))) %>%
-    #   ungroup() %>%
-    #   dplyr::select(-n_take)
-    
-    # n_ind <- length(unique(target$ID))
-    # target_selected <- target %>% group_by(ID) %>% slice_sample(n = ceiling(n_total/n_ind))
-    
-    target_selected <- target %>% slice_sample(n = n_total)
+    # thios is lame
+    target_selected <- target %>% slice_head(n = cut)
     
   } else if (stratification == "IDs") {
     # this is by ID... removing IDs
@@ -146,11 +130,30 @@ subset_target_data <- function(stratification, train, test_IDs, cut, target_clas
       select(-any_of(c("diff", "bout_id")))
     
     message(paste("total bouts:", length(all_bouts), "| requested:", round(exact_bouts, 3),
-                  "| whole bouts:", n_full, "| partial bout fraction:", round(frac, 3),
                   "| windows:", nrow(target_selected)))
+  
+  } else if (stratification == "windows"){
+    
+  
+    if (cut > length(unique(target$ID))){
+      # this round-robis it so they get roughly equal amounts from each individual
+      target_selected <- target %>%
+        mutate(.row = row_number()) %>%
+        group_by(ID) %>%
+        mutate(.rank = row_number()) %>%
+        ungroup() %>%
+        arrange(.rank, ID) %>%
+        slice_head(n = cut) %>%
+        arrange(.row) %>%          # restore original order
+        select(-.row, -.rank)
+      
+    } else {
+      target_selected <- target %>% slice_head(n = cut)
+    }
+
     
   } else {
-    print("stratification method unknwon: select from IDs, random, or bouts.")
+    print("stratification method unknwon: select from IDs, random, windows, or bouts.")
   }
   
   all <- bind_rows(train %>% dplyr::filter(Activity != target_class), target_selected)

@@ -7,6 +7,8 @@ design_build_RF <- function(data, type, metadata_cols, hyperparameters = NULL){
   # prep the data
   other_feature_data <- as.data.table(data)
   clean_cols <- removeBadFeatures(other_feature_data, var_threshold = 0.3, corr_threshold = 0.9)
+  if (is.null(clean_cols) || length(clean_cols) == 0) return(NULL) # if there was no dfata, we need to skip out of this
+  
   training_data <- other_feature_data %>%
     select(c(!!!syms(clean_cols), "Activity")) %>%
     na.omit() %>%
@@ -108,8 +110,15 @@ design_build_RF <- function(data, type, metadata_cols, hyperparameters = NULL){
 # remove redundant and NA columns
 removeBadFeatures <- function(feature_data, var_threshold, corr_threshold) {
   
+  if (!is.data.frame(feature_data) || ncol(feature_data) == 0 || nrow(feature_data) == 0) {
+    warning("Empty feature data; returning no features")
+    return(character(0))
+  }
+  
   # sometimes empty data is coming in and erroring here...
-  stopifnot(is.data.frame(feature_data), ncol(feature_data) > 0, nrow(feature_data) > 0)
+  if (!is.data.frame(feature_data) || ncol(feature_data) == 0 || nrow(feature_data) == 0) {
+    return(NULL)
+  }
   
   # pick numeric columns by name, excluding metadata
   num_cols <- names(feature_data)[vapply(feature_data, is.numeric, logical(1))]

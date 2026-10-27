@@ -8,9 +8,10 @@ source("Scripts/config.R") # file with all the config infomation for the analysi
 # reset_everything() # deletes everything except the raw data
 
 # Determine the target classes --------------------------------------------
-target_classes <- determine_targets(all_species, plot = FALSE) # if plot true makes a bar chart
+target_classes <- determine_targets(all_species, settings, plot = FALSE) # if plot true makes a bar chart
 
-# all_species <- setdiff(all_species, "Dunford_Cat")
+# all_species <- "Dickinson_Goat"
+# boost_methods <- "Overlap50"
 for (species in all_species){
   
   message(species)
@@ -31,7 +32,8 @@ for (species in all_species){
                       target_class = majority_class,
                       hyperparameters, metadata_cols, boost_methods, cut_conditions, stratification,
                       k = 3, # this is the number of test data folds -- must be 2 or more
-                      n_reps = 2) # this is how many reps within each fold (~5-10 replicates ideal)
+                      n_reps = 3) # this is how many reps within each fold (~5-10 replicates ideal)
+                      # when the stratification is windows, there is no stochasticity, so just rep once
 
   # Boosting trials ---------------------------------------------------------
   # minority_class <- target_classes %>% dplyr::filter(type == "Minority", Species == species) %>% pull(Activity)
@@ -52,37 +54,4 @@ for (species in all_species){
 
 
 # go to the analysis.R file to visualise etc.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Plots -------------------------------------------------------------------
-for (species in all_species){
-  message(species)
-  feature_data <- fread(file.path("Data", species, "Nothing_Feature_data.csv"))
-  synths  <- list.files(file.path("Data", species, "Boost"), full.names = TRUE)
-  boosted <- lapply(synths, fread)
-  names(boosted) <- word(basename(tools::file_path_sans_ext(synths)), 3, sep = "_")
-  
-  p <- plot_boosted_facets(feature_data, boosted,
-                        target_col = "Activity",
-                        metadata_cols = c("ID", "Time", "Activity", "Method"),
-                        n_neighbors = 15, min_dist = 0.1, seed = 1000,
-                        ncol = 3)
-  
-  ggsave(file.path("Output", species, "Figures", paste0(species, "_vis.png")), 
-         p, width = 18, height = 11, dpi = 300)
-}
-
 

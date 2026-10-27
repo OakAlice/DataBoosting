@@ -7,14 +7,14 @@ metrics <- list.files("Output", recursive = TRUE, full.names = TRUE)
 
 # pulling out the majority files
 minority_files <- metrics[grepl("/Minority/", metrics)]
-majority_files <- metrics[grepl("/Majority/", metrics)]
+majority_files <- metrics[grepl("/Majority_random/", metrics)]
 
 # Majority ----------------------------------------------------------------
 majority <- rbindlist(lapply(majority_files, fread), fill = TRUE)
 result_df <- merge(majority, target_classes, by.x = c("Species", "class"), by.y = c("Species", "Activity"), all.x = TRUE)
 
 
-result_df <- result_df[result_df$Species == "Dickinson_Goat"]
+result_df <- result_df[!result_df$Species == "Mauny_Goat"]
 
 
 summary <- result_df %>%
@@ -67,7 +67,7 @@ ggplot(summary,
                 linewidth = 1, width = 0.1) +
   geom_point(data = ~ filter(.x, method == "Nothing"),
              shape = 8, colour = "black", size = 3, stroke = 1) +
-  labs(x = "Percentage of retained bouts (%)", y = "F1") +
+  labs(x = "Retained windows", y = "F1") +
   my_theme() +
   scale_colour_manual(values = methods_colours) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -81,7 +81,7 @@ ggplot(summary2,
                 linewidth = 1, width = 0.1) +
   geom_point(data = ~ filter(.x, method == "Nothing"),
              shape = 8, colour = "black", size = 3, stroke = 1) +
-  labs(x = "Percentage of retained bouts (%)", y = "F1") +
+  labs(x = "Retained windows", y = "Change in F1") +
   my_theme() +
   scale_colour_manual(values = methods_colours) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -131,6 +131,9 @@ ggplot(group_preds,
 # Minority class ----------------------------------------------------------
 minority <- rbindlist(lapply(minority_files, fread), fill = TRUE) %>% rename(Activity = Behaviour)
 result_df <- merge(minority, target_classes, by = c("Species", "Activity"), all.x = TRUE)
+
+result_df <- result_df[result_df$Species == "Dickinson_Goat"]
+
 
 summary <- result_df %>%
   group_by(Species, method, Activity, type) %>%
@@ -218,6 +221,36 @@ ggplot(group_preds,
   my_theme() + 
   scale_colour_manual(values = fave_colours) +
   theme(legend.position = "none", axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45))
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Plots -------------------------------------------------------------------
+for (species in all_species){
+  message(species)
+  feature_data <- fread(file.path("Data", species, "Nothing_Feature_data.csv"))
+  synths  <- list.files(file.path("Data", species, "Boost"), full.names = TRUE)
+  boosted <- lapply(synths, fread)
+  names(boosted) <- word(basename(tools::file_path_sans_ext(synths)), 3, sep = "_")
+  
+  p <- plot_boosted_facets(feature_data, boosted,
+                        target_col = "Activity",
+                        metadata_cols = c("ID", "Time", "Activity", "Method"),
+                        n_neighbors = 15, min_dist = 0.1, seed = 1000,
+                        ncol = 3)
+  
+  ggsave(file.path("Output", species, "Figures", paste0(species, "_vis.png")), 
+         p, width = 18, height = 11, dpi = 300)
+}
 
 
 

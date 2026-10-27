@@ -4,8 +4,12 @@
 # this needs to be mroe clearly thought out.
 
 clean_raw_data <- function(training_data, metadata_cols) {
+  
   # for cleaning the raw training data
   clean_cols <- removeBadFeatures(training_data, var_threshold = 0.3, corr_threshold = 0.9)
+  
+  if (is.null(clean_cols) || length(clean_cols) == 0) return(NULL) # skip out of this fast
+  
   training_data <- training_data %>%
     select(all_of(clean_cols), any_of(metadata_cols)) %>%
     na.omit()
@@ -53,21 +57,19 @@ overlap_minority <- function(raw_data, sample_rate, metadata_cols, target_class,
   
   # Generate windows within each ID
   bounds <- do.call(rbind, Map(function(start, end) {
-    n <- max(ceiling((end - start + 1 - overlap_samples) / step), 1)
+    L <- end - start + 1
+    if (L < window_samples) return(NULL)               # drop short blocks
+    n <- floor((L - window_samples) / step) + 1        # full windows only
     window_start <- start + (seq_len(n) - 1) * step
-    
-    data.frame(
-      start = window_start,
-      end = pmin(window_start + window_samples - 1, end)
-    )
+    data.frame(start = window_start, end = window_start + window_samples - 1)
   }, starts, ends))
   
   # Keep only windows containing the minority class as the label
   # thought about doing it if any minority appeared but this is cleaner
-  selected <- which(vapply(seq_len(nrow(bounds)), function(i) {
-    labels <- raw_data[["Activity"]][bounds$start[i]:bounds$end[i]]
-    sum(labels %in% target_class) >= max(table(labels))
-  }, logical(1)))
+  is_t <- raw_data$Activity %in% target_class
+  cs   <- c(0, cumsum(is_t))                               # running count of target samples
+  n_t  <- cs[bounds$end + 1] - cs[bounds$start]            # target samples per window
+  selected <- which(n_t / (bounds$end - bounds$start + 1) > 0.5)
   
   # Extract selected windows
   raw_windows <- lapply(selected, function(i) {
@@ -450,7 +452,7 @@ boost_training_data <- function(raw_data, feature_data = NULL, metadata_cols, ta
     synth_features <- noise_minority(training_data = feature_data, metadata_cols, target_class, target_count)
     
   } else if (method == "Rotation") {
-    synth_features <- rotation_minority(raw_data, feature_data, target_class, target_count, Hz, 
+    synth_features <- rotation_minority(raw_data, feature_data, target_class, target_n = target_count, Hz, 
                                         window_s = ifelse(Hz > 1, 2, 5),
                                         max_angle = 5) # how much it can rotate by... have made this conservative
     if (is.null(synth_features)) return (NULL)

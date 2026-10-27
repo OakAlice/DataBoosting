@@ -100,8 +100,9 @@ metadata_cols <- c("Activity", "ID", "Time", "win_id")
 target_col <- "Activity"
 type <- "multiclass"
 
-cut_conditions <- c(0.1, 0.5, 1, 5, 10, 25, 50, 75)
-stratification <- "bouts" # "IDs", "bouts", "random"
+# cut_conditions <- c(0.1, 0.5, 1, 5, 10, 25, 50, 75)
+cut_conditions <- c(1, 5, 10, 50, 100, 500, 1000) 
+stratification <- "random" # "IDs", "bouts", "random", "windows"
 
 # File directory ----------------------------------------------------------
 # for each of the defined species check data exists and create an output folder
