@@ -1,5 +1,6 @@
 # Ignore these directories
 Output/
+CaseStudy/
 
 # leave one example of data
 /Data/*

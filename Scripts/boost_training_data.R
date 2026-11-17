@@ -200,82 +200,105 @@ rotation_minority <- function(raw_data, feature_data, target_class, target_n,
   return(synth_features)
 }
 
-smote_minority <- function(training_data, smote_method, metadata_cols,
-                           target_class, target_n, k = 5) {
+smote_minority <- function(training_data, smote_method = c("SMOTE_within", "SMOTE_between"),
+                           metadata_cols, target_class, target_n, k = 5) {
+  
+  # SMOTE_within:  synthesises inside each individual only (neighbours never cross IDs)
+  # SMOTE_between: synthesises from the pooled samples of all individuals
+  smote_method <- match.arg(smote_method)
   
   cleaned <- clean_raw_data(training_data, metadata_cols)
-  y <- as.character(cleaned$y)
-  X <- as.data.frame(cleaned$X)
+  y   <- as.character(cleaned$y)
+  X   <- as.data.frame(cleaned$X)
+  ids <- as.character(training_data[["ID"]])   # assumes rows align with cleaned$X / cleaned$y
   
-  counts <- table(y)
-  
-  out <- lapply(target_class, function(cls) {
-    n_cls <- counts[[cls]]
-    have <- sum(training_data[["Activity"]] == cls) # what is already in the training data
-    n_needed <- target_n - have  # synthetic rows needed to land on exactly target_n
+  # Generate exactly n synthetic rows of class cls from the rows in `idx`
+  gen_synth <- function(idx, cls, n, k) {
+    n_min <- length(idx)
+    if (n <= 0 || n_min < 2) return(NULL)
+    k_use <- min(k, n_min - 1)
     
-    message("class ", cls, ": have = ", have, ", target_n = ", target_n, ", adding = ", max(n_needed, 0))
-    if (n_needed <= 0) return(NULL) # already at/above target_n, nothing to add
+    # smotefamily oversamples the smaller class, so "other" must be larger.
+    # Decoy rows come from all other-class rows and are discarded afterwards.
+    oth_idx <- which(y != cls)
+    if (length(oth_idx) == 0) return(NULL)
+    want_oth <- n_min + 1
+    oth_pick <- if (length(oth_idx) >= want_oth) sample(oth_idx, want_oth) else
+      sample(oth_idx, want_oth, replace = TRUE)
     
-    k_use <- min(k, n_cls - 1)
-    y_bin <- ifelse(y == cls, cls, "other")
+    X_in <- rbind(X[idx, , drop = FALSE], X[oth_pick, , drop = FALSE])
+    y_in <- c(rep(cls, n_min), rep("other", length(oth_pick)))
     
-    # smotefamily always oversamples the smaller class, so make "other" the larger one.
-    # Pad "other" up to target_n with decoy rows that are discarded later.
-    # For ADAS, over-pad because it only generates ~(n_other - n_target) and I trim afterwards.
-    n_oth <- sum(y_bin == "other")
-    want_oth <- if (smote_method == "ADSYN") n_cls + ceiling(1.5 * n_needed) else max(target_n, n_cls + 1)
-    want_oth <- max(n_oth, want_oth, n_cls + 1)
-    X_aug <- X
-    y_aug <- y_bin
-    if (want_oth > n_oth) {
-      oth_idx <- which(y_bin == "other")
-      extra   <- sample(oth_idx, want_oth - n_oth, replace = TRUE)   # decoy rows, discarded later
-      X_aug   <- rbind(X, X[extra, , drop = FALSE])
-      y_aug   <- c(y_bin, y_bin[extra])
-    }
-    
-    run_smote <- function(X_in, y_in, n) {
-      tryCatch(
-        smotefamily::SMOTE(X_in, y_in, K = k_use, dup_size = ceiling(n / n_cls)),
-        error = function(e) { message("SMOTE failed for ", cls, ": ", e$message); NULL }
-      )
-    }
-    
-    syn <- if (smote_method == "SMOTE") {
-      run_smote(X_aug, y_aug, n_needed)
-    } else if (smote_method == "ADSYN") {
-      tryCatch(
-        smotefamily::ADAS(X_aug, y_aug, K = k_use),
-        error = function(e) { message("ADSYN failed for ", cls, ": ", e$message); NULL }
-      )
-    }
+    syn <- tryCatch(
+      smotefamily::SMOTE(X_in, y_in, K = k_use, dup_size = ceiling(n / n_min)),
+      error = function(e) { message("SMOTE failed for ", cls, ": ", e$message); NULL }
+    )
     if (is.null(syn)) return(NULL)
     
     s <- syn$syn_data[syn$syn_data$class == cls, , drop = FALSE]
+    if (nrow(s) == 0) return(NULL)
+    if (nrow(s) > n) s <- s[sample(nrow(s), n), , drop = FALSE]
+    s
+  }
+  
+  out <- lapply(target_class, function(cls) {
+    cls_idx  <- which(y == cls)
+    have     <- length(cls_idx)
+    n_needed <- target_n - have   # synthetic rows needed to land on exactly target_n
     
-    # ADAS can under-deliver, so top up with plain SMOTE to hit the target exactly
-    if (nrow(s) < n_needed) {
-      message(smote_method, " gave ", nrow(s), "/", n_needed, " for ", cls, ", topping up with SMOTE")
-      top <- run_smote(X_aug, y_aug, n_needed - nrow(s))
-      if (!is.null(top)) {
-        t_rows <- top$syn_data[top$syn_data$class == cls, , drop = FALSE]
-        s <- rbind(s, t_rows)
-      }
+    message("class ", cls, " (", smote_method, "): have = ", have,
+            ", target_n = ", target_n, ", adding = ", max(n_needed, 0))
+    if (n_needed <= 0) return(NULL)
+    
+    if (smote_method == "SMOTE_between") {
+      return(gen_synth(cls_idx, cls, n_needed, k))
     }
     
+    # SMOTE_within: split n_needed across individuals in proportion to their sample count
+    id_counts <- table(ids[cls_idx])
+    id_counts <- id_counts[id_counts >= 2]   # need >= 2 samples to interpolate
+    if (length(id_counts) == 0) {
+      message("  no individual has >= 2 samples of ", cls, ", skipping")
+      return(NULL)
+    }
+    
+    raw   <- n_needed * id_counts / sum(id_counts)
+    quota <- floor(raw)
+    left  <- n_needed - sum(quota)
+    if (left > 0) {
+      bump <- order(raw - quota, decreasing = TRUE)[seq_len(left)]
+      quota[bump] <- quota[bump] + 1
+    }
+    
+    res <- lapply(names(id_counts), function(id) {
+      gen_synth(cls_idx[ids[cls_idx] == id], cls, quota[[id]], k)
+    })
+    s <- data.table::rbindlist(res)
     if (nrow(s) == 0) return(NULL)
-    if (nrow(s) > n_needed) s <- s[sample(nrow(s), n_needed), , drop = FALSE]  # trim to exactly n_needed
-    s
+    
+    # top up any shortfall (failed IDs) from the eligible individuals
+    short <- n_needed - nrow(s)
+    if (short > 0) {
+      message("  within-ID gave ", nrow(s), "/", n_needed, " for ", cls, ", topping up")
+      pick <- sample(names(id_counts), short, replace = TRUE, prob = as.numeric(id_counts))
+      extra <- lapply(unique(pick), function(id) {
+        gen_synth(cls_idx[ids[cls_idx] == id], cls, sum(pick == id), k)
+      })
+      s <- data.table::rbindlist(c(list(s), extra))
+    }
+    if (nrow(s) > n_needed) s <- s[sample(nrow(s), n_needed), ]
+    as.data.frame(s)
   })
   
-  synth_data <- rbindlist(out)
+  synth_data <- data.table::rbindlist(out)
   if (nrow(synth_data) == 0) return(NULL)
   
   synth_data %>%
     rename(!!"Activity" := class) %>%
     mutate(ID = "Synth", Time = NA)
 }
+      
+      
 DTW_minority <- function(raw_data, feature_data, target_class, Hz, window_s, n_avg = 3) {
   
   axis_cols <- c("X", "Y", "Z") # hardcoded because I am a sloppy ugly coder. also a chud.
@@ -437,12 +460,49 @@ boost_training_data <- function(raw_data, feature_data = NULL, metadata_cols, ta
   #' method (Nothing | Oversample | Overlap# | SMOTE | ADSYN | Random_noise | DTW): defined method
   #' Hz: frequency of the sampling 
   #' path_to_features: In case these have already been generated, saves a lot of time. Ugly tho.
+   
+  # generate the feature data
+  res <- generate_features_master(raw_data, sample_rate = Hz, overlap_setting = 0, window_setting = 2)
+  feature_data <- res$features
   
-  if (method == "Nothing"){
+  if (method == "Nothing"){ # Control 1
     # just give this back to us
     synth_features <- feature_data
     
-  } else if (method == "Oversample"){
+  } else if (method == "Weighted"){ # Control 2
+      # just give this back to us
+      synth_features <- feature_data
+  
+  } else if (method == "Useless"){ # Control 3
+    
+    cleaned <- clean_raw_data(feature_data, metadata_cols)
+    training_data <- cleaned$training_data
+    y <- cleaned$y
+    X <- cleaned$X
+    
+    synth_list <- lapply(intersect(target_class, unique(y)), function(cls) {
+      X_min    <- X[y == cls, , drop = FALSE]
+      n_needed <- target_count - nrow(X_min)
+      if (n_needed <= 0) return(NULL)
+      
+      base <- X_min[sample.int(nrow(X_min), n_needed, replace = TRUE), , drop = FALSE]
+      
+      sds <- if (nrow(X_min) > 1) apply(X_min, 2, sd) else rep(0, ncol(X_min))
+      sds[is.na(sds)] <- 0
+      
+      noise <- sweep(matrix(rnorm(length(base)), nrow = nrow(base)),
+                     2, sds * 0.001, "*")
+      
+      out <- as.data.frame(base + noise)
+      out[["Activity"]] <- cls
+      out$ID   <- "Synth"
+      out$Time <- NA
+      out
+    })
+    
+    synth_features <- bind_rows(synth_list)
+    
+  } else if (method %in% c("Oversample", "Scramble")){ # Control 4
     synth_features <- oversample_minority(feature_data, target_class, target_count)
     
   } else if (grepl("Overlap", method, fixed = TRUE)){
@@ -459,11 +519,39 @@ boost_training_data <- function(raw_data, feature_data = NULL, metadata_cols, ta
     if (is.null(synth_features)) return (NULL)
     synth_features <- synth_features %>% mutate(Time = feature_data$Time[1])
     
-  } else if (method == "SMOTE"){
+    
+  } else if (method == "Rotation_Useless") {
+      synth_features <- rotation_minority(raw_data, feature_data, target_class, target_n = target_count, Hz, 
+                                          window_s = ifelse(Hz > 1, 2, 5),
+                                          max_angle = 0) # in this case, nothing
+      if (is.null(synth_features)) return (NULL)
+      synth_features <- synth_features %>% mutate(Time = feature_data$Time[1])
+    
+  } else if (grepl(method, "SMOTE_within")){
+    
+    if (nrow(feature_data[feature_data$Activity == target_class])<10){
+      message("Too few samples for smote")
+      return(NULL) # exit out if this can't be done # this is definitely going to error downstream UGH
+      # TODO: Fix this
+    }
+    
     synth_features <- smote_minority(training_data = feature_data, 
-                                     smote_method = "SMOTE", 
+                                     smote_method = "SMOTE_within", 
                                      metadata_cols, target_class, target_count,
                                      k = 5)
+    
+  } else if (grepl(method, "SMOTE_between")){
+      
+      if (nrow(feature_data[feature_data$Activity == target_class])<10){
+        message("Too few samples for smote")
+        return(NULL) # exit out if this can't be done # this is definitely going to error downstream UGH
+        # TODO: Fix this
+      }
+      
+      synth_features <- smote_minority(training_data = feature_data, 
+                                       smote_method = "SMOTE_between", 
+                                       metadata_cols, target_class, target_count,
+                                       k = 5)
     
   } else if (method == "ADSYN") {
     synth_features <- smote_minority(feature_data, smote_method = "ADSYN", metadata_cols, target_class, target_count)
@@ -476,7 +564,7 @@ boost_training_data <- function(raw_data, feature_data = NULL, metadata_cols, ta
     synth_features <- synth_features %>% mutate(Time = feature_data$Time[1])
   
   } else if (method == "DTW") {
-    synth_features <- DTW_minority(raw_data = , 
+    synth_features <- DTW_minority(raw_data = raw_data, 
                                    feature_data = feature_data, 
                                    target_class, Hz, 
                                    window_s = ifelse(Hz > 1, 2, 5), 
@@ -493,6 +581,11 @@ boost_training_data <- function(raw_data, feature_data = NULL, metadata_cols, ta
   
   boosted_data <- unique(rbindlist(list(synth_features, feature_data),
                                    use.names = TRUE, fill = TRUE)) # this will also remove any possible duplicates
+  
+ if (method == "Scramble"){ # Control 2
+  # oversample to bring to total count and then scramble the lables
+  boosted_data$Activity <- sample(boosted_data$Activity)
+ }
   
   return (list(boosted_data = boosted_data,
                synth_features = synth_features))

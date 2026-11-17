@@ -16,7 +16,8 @@ pacman::p_load(
   uwot,
   cluster,
   glmmTMB,
-  marginaleffects
+  marginaleffects,
+  colorspace
 )
 
 # Plotting ----------------------------------------------------------------
@@ -51,13 +52,14 @@ more_colours <- c(
 
 methods_colours <- c(
   "Nothing" = "darkslategrey",
+  "Weighted" = "slategrey",
   "Oversample" = "firebrick3",
   "Overlap50" = "coral", 
   "Overlap90" = "goldenrod2", 
   "RandomNoise" = "khaki2", 
   "Rotation" = "aquamarine3", 
-  "SMOTE" = "darkcyan", 
-  "ADSYN" = "powderblue", 
+  "SMOTE_within" = "darkcyan", 
+  "SMOTE_between" = "powderblue", 
   "Decomposition" = "slateblue2", 
   "DTW" = "plum"
   )
@@ -79,14 +81,21 @@ set.seed(1000)
 
 settings <- fread("Data/DatasetCharacteristics.csv")
 
-boost_methods <- c("Nothing",
+boost_methods <- c(# Controls
+                   "Nothing",
+                   # "Weighted",
                    "Oversample",
-                   "Overlap50",
-                   "Overlap90",
-                   "RandomNoise",
-                   "Rotation",
-                   "SMOTE"
-                   # "ADSYN" #,
+                   # "Scramble",
+                   # "Useless",
+                   # "Rotation_Useless",
+                   
+                   # Methods
+                   # "Overlap50",
+                   # "Overlap90",
+                   # "RandomNoise",
+                   # "Rotation",
+                   "SMOTE_within",
+                   "SMOTE_between"
                    #"DTW",
                    #"Decomposition"
 )
@@ -99,6 +108,6 @@ metadata_cols <- c("Activity", "ID", "Time", "win_id")
 target_col <- "Activity"
 type <- "multiclass"
 
-# cut_conditions <- c(0.1, 0.5, 1, 5, 10, 25, 50, 75)
-cut_conditions <- c(1, 5, 10, 50, 100, 500, 1000) 
-stratification <- "random" # "IDs", "bouts", "random", "windows"
+# cut_conditions <- c(0.01, 0.1, 0.5, 1, 5, 10, 25, 50, 75)
+cut_conditions <- c(1, 100, 1000) # c(1, 5, 10, 50, 100, 500, 1000, 5000) 
+stratification <- "windows" # "IDs", "bouts", "random", "windows"

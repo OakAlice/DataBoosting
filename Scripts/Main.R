@@ -7,39 +7,32 @@ source("Scripts/config.R") # file with all the config infomation for the analysi
 
 # reset_everything() # deletes everything except the raw data to clean dir for a fresh run
 
-# Determine the target classes --------------------------------------------
-target_classes <- determine_targets(all_species, settings, plot = FALSE) # if plot true makes a bar chart
-
-# all_species <- "Galea_Cat"
-# boost_methods <- "Overlap50"
+all_species <- "Dickinson_Goat"
+boost_methods <- "SMOTE_between"
 for (species in all_species){
   
   # Generate the base features ----------------------------------------------
-  dat <- make_base_features(species, settings)
+  dat <- prepare_species_data(species, Hz = settings$Hz[settings$Species == species])
 
   # Fit a RF to all the data once -------------------------------------------
   # hyperparameters <- find_optimal_hyperparameters(species, settings, dat)
   hyperparameters <- "default" # fast option... note that optimisation no longer works with the code changes Ive made anyway
   
   # Volume (majority) trials ------------------------------------------------
-  majority_class <- target_classes %>% dplyr::filter(type == "Majority", Species == species) %>% pull(Activity)
-  run_majority_trials(species,
+  run_subsampling_trials(species,
                       Hz = settings$Hz[settings$Species == species],
                       raw_data = dat$raw,
                       features = dat$features,
-                      target_class = majority_class,
                       hyperparameters, metadata_cols, boost_methods, cut_conditions, stratification,
-                      k = 3, # this is the number of test data folds -- must be 2 or more fr code to work
-                      n_reps = 3) # this is how many reps within each fold (~5-10 replicates ideal)
-
-  # Generate the data for visualisation -------------------------------------
-  # generate_augmented_data(all_species, boost_methods)  
+                      k = 2, # this is the number of test data folds -- must be 2 or more fr code to work
+                      n_reps = 2) # this is how many reps within each fold (~5-10 replicates ideal)
   
-  # Silhouette score --------------------------------------------------------
-  # find_silhouette_scores(all_species, metadata_cols, target_col) 
+  # find the silhouette scores
+  sils <- find_silhouette_scores(species, metadata_cols)
+  fwrite(sils, file.path("Output", species, "Silhouette_scores.csv"))
   
 }
 
-
 # go to the analysis.R file to visualise and run stats etc.
+
 
